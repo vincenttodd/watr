@@ -8,17 +8,22 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @EnvironmentObject var subscriptionService: SubscriptionService
+    @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Group {
+            if hasCompletedOnboarding {
+                NavigationStack {
+                    HomeView()
+                }
+            } else {
+                OnboardingWelcomeView()
+            }
         }
-        .padding()
+        .task {
+            await subscriptionService.checkSubscription()
+        }
     }
-}
-
-#Preview {
-    ContentView()
 }

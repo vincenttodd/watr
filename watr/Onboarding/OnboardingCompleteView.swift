@@ -22,7 +22,7 @@ struct OnboardingCompleteView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.957, green: 0.945, blue: 0.925)
+            Color.watrScreenBackground
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -32,7 +32,7 @@ struct OnboardingCompleteView: View {
                     VStack(spacing: 20) {
                         ProgressView()
                             .scaleEffect(1.5)
-                            .tint(Color(red: 0.18, green: 0.35, blue: 0.24))
+                            .tint(Color.watrPrimary)
                         
                         Text("Setting everything\nup for you")
                             .font(.system(size: 28, weight: .light))
@@ -41,10 +41,7 @@ struct OnboardingCompleteView: View {
                 } else if let plan = plan {
                     VStack(spacing: 32) {
                         Text("Your daily goal")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(1)
+                            .watrSectionLabel()
                         
                         HStack(alignment: .bottom, spacing: 4) {
                             Text("\(Int(plan.totalOz))")
@@ -70,14 +67,9 @@ struct OnboardingCompleteView: View {
                         saveAndContinue()
                     } label: {
                         Text("Start drinking")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(Color(red: 0.18, green: 0.35, blue: 0.24))
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .watrPrimaryButton()
                     }
-                    .padding(.horizontal, 28)
+                    .watrScreenHorizontalPadding()
                     .padding(.bottom, 48)
                 }
             }

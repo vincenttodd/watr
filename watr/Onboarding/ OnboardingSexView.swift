@@ -13,20 +13,19 @@ struct OnboardingSexView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.957, green: 0.945, blue: 0.925)
+            Color.watrScreenBackground
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Choose your\ngender")
-                        .font(.system(size: 34, weight: .light))
+                        .watrScreenTitle()
                     
                     Text("This will be used to calibrate your custom plan.")
-                        .font(.system(size: 16, weight: .light))
-                        .foregroundStyle(.secondary)
+                        .watrScreenSubtitle()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 28)
+                .watrScreenHorizontalPadding()
                 .padding(.top, 48)
                 
                 Spacer()
@@ -43,21 +42,16 @@ struct OnboardingSexView: View {
                                 Spacer()
                                 if profile.sex == sex {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(Color(red: 0.18, green: 0.35, blue: 0.24))
+                                        .foregroundStyle(Color.watrPrimary)
                                 }
                             }
                             .padding(.horizontal, 20)
                             .frame(height: 56)
-                            .background(
-                                profile.sex == sex ?
-                                Color(red: 0.18, green: 0.35, blue: 0.24).opacity(0.08) :
-                                Color.white
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .watrSecondaryButtonBackground(selected: profile.sex == sex)
                         }
                     }
                 }
-                .padding(.horizontal, 28)
+                .watrScreenHorizontalPadding()
                 
                 Spacer()
                 
@@ -66,14 +60,9 @@ struct OnboardingSexView: View {
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(Color(red: 0.18, green: 0.35, blue: 0.24))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .watrPrimaryButton()
                 }
-                .padding(.horizontal, 28)
+                .watrScreenHorizontalPadding()
                 .padding(.bottom, 48)
             }
         }

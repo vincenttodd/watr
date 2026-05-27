@@ -14,7 +14,7 @@ struct CustomizeView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.957, green: 0.945, blue: 0.925)
+            Color.watrScreenBackground
                 .ignoresSafeArea()
             
             ScrollView {
@@ -23,10 +23,7 @@ struct CustomizeView: View {
                         // Sleep section
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Sleep")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .textCase(.uppercase)
-                                .tracking(1)
+                                .watrSectionLabel()
                             
                             VStack(spacing: 0) {
                                 settingRow(
@@ -51,17 +48,13 @@ struct CustomizeView: View {
                                     )
                                 )
                             }
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .watrCardSurface()
                         }
                         
                         // Body section
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Body")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .textCase(.uppercase)
-                                .tracking(1)
+                                .watrSectionLabel()
                             
                             VStack(spacing: 0) {
                                 settingRow(
@@ -82,29 +75,24 @@ struct CustomizeView: View {
                                     value: birthDateString(profile.birthDate)
                                 )
                             }
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .watrCardSurface()
                         }
                         
                         // Location section
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Environment")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .textCase(.uppercase)
-                                .tracking(1)
+                                .watrSectionLabel()
                             
                             settingRow(
                                 icon: "location.fill",
                                 label: "ZIP Code",
                                 value: profile.zipCode
                             )
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .watrCardSurface()
                         }
                     }
                 }
-                .padding(.horizontal, 28)
+                .watrScreenHorizontalPadding()
                 .padding(.top, 20)
                 .padding(.bottom, 48)
             }
@@ -117,11 +105,7 @@ struct CustomizeView: View {
     func settingRow(icon: String, label: String, value: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .font(.system(size: 15))
-                .foregroundStyle(Color(red: 0.18, green: 0.35, blue: 0.24))
-                .frame(width: 32, height: 32)
-                .background(Color(red: 0.18, green: 0.35, blue: 0.24).opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .watrIconBadge()
             
             Text(label)
                 .font(.system(size: 15))

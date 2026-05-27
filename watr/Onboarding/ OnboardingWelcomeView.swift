@@ -15,7 +15,7 @@ struct OnboardingWelcomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(red: 0.957, green: 0.945, blue: 0.925)
+                Color.watrScreenBackground
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -40,12 +40,7 @@ struct OnboardingWelcomeView: View {
                                 .environmentObject(profile)
                         } label: {
                             Text("Get Started")
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 54)
-                                .background(Color(red: 0.18, green: 0.35, blue: 0.24))
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .watrPrimaryButton()
                         }
                         
                         Button("Already have an account? Login") {
@@ -54,7 +49,7 @@ struct OnboardingWelcomeView: View {
                         .font(.system(size: 15))
                         .foregroundStyle(.secondary)
                     }
-                    .padding(.horizontal, 28)
+                    .watrScreenHorizontalPadding()
                     .padding(.bottom, 48)
                 }
             }

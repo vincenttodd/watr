@@ -13,20 +13,19 @@ struct OnboardingSleepView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.957, green: 0.945, blue: 0.925)
+            Color.watrScreenBackground
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Sleep schedule")
-                        .font(.system(size: 34, weight: .light))
+                        .watrScreenTitle()
                     
                     Text("This will be used to calibrate your custom plan.")
-                        .font(.system(size: 16, weight: .light))
-                        .foregroundStyle(.secondary)
+                        .watrScreenSubtitle()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 28)
+                .watrScreenHorizontalPadding()
                 .padding(.top, 48)
                 
                 Spacer()
@@ -35,11 +34,8 @@ struct OnboardingSleepView: View {
                     // Weekday schedule
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Weekdays")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(1)
-                            .padding(.horizontal, 28)
+                            .watrSectionLabel()
+                            .watrScreenHorizontalPadding()
                         
                         HStack(spacing: 0) {
                             VStack(spacing: 4) {
@@ -98,7 +94,7 @@ struct OnboardingSleepView: View {
                             }
                             .frame(maxWidth: .infinity)
                         }
-                        .padding(.horizontal, 28)
+                        .watrScreenHorizontalPadding()
                     }
                 }
                 
@@ -109,14 +105,9 @@ struct OnboardingSleepView: View {
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(Color(red: 0.18, green: 0.35, blue: 0.24))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .watrPrimaryButton()
                 }
-                .padding(.horizontal, 28)
+                .watrScreenHorizontalPadding()
                 .padding(.bottom, 48)
             }
         }

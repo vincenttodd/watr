@@ -30,7 +30,7 @@ struct HomeView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.957, green: 0.945, blue: 0.925)
+            Color.watrScreenBackground
                 .ignoresSafeArea()
             
             if let plan = plan {
@@ -50,17 +50,14 @@ struct HomeView: View {
                                     .foregroundStyle(.primary)
                             }
                         }
-                        .padding(.horizontal, 28)
+                        .watrScreenHorizontalPadding()
                         .padding(.top, 52)
                         .padding(.bottom, 28)
                         
                         // Hero
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Today")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .textCase(.uppercase)
-                                .tracking(1)
+                                .watrSectionLabel()
                             
                             HStack(alignment: .bottom, spacing: 4) {
                                 Text("\(Int(plan.totalOz))")
@@ -78,7 +75,7 @@ struct HomeView: View {
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 28)
+                        .watrScreenHorizontalPadding()
                         .padding(.bottom, 24)
                         
                         // Next window card
@@ -110,20 +107,17 @@ struct HomeView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(22)
-                            .background(Color(red: 0.18, green: 0.35, blue: 0.24))
+                            .background(Color.watrPrimary)
                             .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .padding(.horizontal, 28)
+                            .watrScreenHorizontalPadding()
                             .padding(.bottom, 28)
                         }
                         
                         // Windows list
                         VStack(alignment: .leading, spacing: 0) {
                             Text("Today's windows")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(.secondary)
-                                .textCase(.uppercase)
-                                .tracking(1)
-                                .padding(.horizontal, 28)
+                                .watrSectionLabel()
+                                .watrScreenHorizontalPadding()
                                 .padding(.bottom, 14)
                             
                             ForEach(plan.windows) { window in
@@ -132,7 +126,7 @@ struct HomeView: View {
                                         .frame(width: 8, height: 8)
                                         .foregroundStyle(
                                             isNextWindow(window, plan: plan) ?
-                                            Color(red: 0.18, green: 0.35, blue: 0.24) :
+                                            Color.watrPrimary :
                                             Color.gray.opacity(0.3)
                                         )
                                     
@@ -141,7 +135,7 @@ struct HomeView: View {
                                             .font(.system(size: 15, weight: .medium))
                                             .foregroundStyle(
                                                 isNextWindow(window, plan: plan) ?
-                                                Color(red: 0.18, green: 0.35, blue: 0.24) :
+                                                Color.watrPrimary :
                                                 .primary
                                             )
                                         Text(windowTimeString(window))
@@ -161,7 +155,7 @@ struct HomeView: View {
                                     }
                                 }
                                 .padding(.vertical, 14)
-                                .padding(.horizontal, 28)
+                                .watrScreenHorizontalPadding()
                                 Divider()
                                     .padding(.leading, 28)
                             }
@@ -172,7 +166,7 @@ struct HomeView: View {
                         } label: {
                             Text("Customize schedule")
                                 .font(.system(size: 15))
-                                .foregroundStyle(Color(red: 0.18, green: 0.35, blue: 0.24))
+                                .foregroundStyle(Color.watrPrimary)
                                 .padding(.top, 24)
                         }
                         
@@ -181,7 +175,7 @@ struct HomeView: View {
                 }
             } else {
                 ProgressView()
-                    .tint(Color(red: 0.18, green: 0.35, blue: 0.24))
+                    .tint(Color.watrPrimary)
             }
         }
         .navigationBarHidden(true)

@@ -14,7 +14,7 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.957, green: 0.945, blue: 0.925)
+            Color.watrScreenBackground
                 .ignoresSafeArea()
             
             ScrollView {
@@ -22,10 +22,7 @@ struct SettingsView: View {
                     // Notifications section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Notifications")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(1)
+                            .watrSectionLabel()
                         
                         VStack(spacing: 0) {
                             HStack {
@@ -33,7 +30,7 @@ struct SettingsView: View {
                                     .font(.system(size: 15))
                                 Spacer()
                                 Toggle("", isOn: $notificationsEnabled)
-                                    .tint(Color(red: 0.18, green: 0.35, blue: 0.24))
+                                    .tint(Color.watrPrimary)
                             }
                             .padding(.horizontal, 16)
                             .frame(height: 52)
@@ -53,7 +50,7 @@ struct SettingsView: View {
                                         .foregroundStyle(.primary)
                                         .padding(.horizontal, 12)
                                         .frame(height: 32)
-                                        .background(Color.gray.opacity(0.1))
+                                        .background(Color.watrNeutralButtonBackground)
                                         .clipShape(Capsule())
                                     }
                                 }
@@ -61,42 +58,33 @@ struct SettingsView: View {
                             .padding(.horizontal, 16)
                             .frame(height: 52)
                         }
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .watrCardSurface()
                     }
                     
                     // Subscription section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Subscription")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(1)
+                            .watrSectionLabel()
                         
                         VStack(spacing: 0) {
                             settingRow(icon: "crown.fill", label: "Manage subscription")
                             Divider().padding(.leading, 56)
                             settingRow(icon: "gift.fill", label: "Refer a friend — get 1 month free")
                         }
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .watrCardSurface()
                     }
                     
                     // Support section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Support")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(1)
+                            .watrSectionLabel()
                         
                         VStack(spacing: 0) {
                             settingRow(icon: "ant.fill", label: "Report a bug")
                             Divider().padding(.leading, 56)
                             settingRow(icon: "bubble.left.fill", label: "Send feedback")
                         }
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .watrCardSurface()
                     }
                     
                     // Reset (for testing)
@@ -113,7 +101,7 @@ struct SettingsView: View {
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
                 }
-                .padding(.horizontal, 28)
+                .watrScreenHorizontalPadding()
                 .padding(.top, 20)
                 .padding(.bottom, 48)
             }
@@ -126,11 +114,7 @@ struct SettingsView: View {
     func settingRow(icon: String, label: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .font(.system(size: 15))
-                .foregroundStyle(Color(red: 0.18, green: 0.35, blue: 0.24))
-                .frame(width: 32, height: 32)
-                .background(Color(red: 0.18, green: 0.35, blue: 0.24).opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .watrIconBadge()
             
             Text(label)
                 .font(.system(size: 15))

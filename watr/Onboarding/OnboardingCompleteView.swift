@@ -16,6 +16,7 @@ struct OnboardingCompleteView: View {
     @State private var isCalculating = true
     @State private var plan: HydrationPlan? = nil
     @State private var weather: WeatherData? = nil
+    @State private var weatherError: String? = nil
     
     let engine = HydrationEngine()
     let weatherService = WeatherService()
@@ -38,6 +39,21 @@ struct OnboardingCompleteView: View {
                             .font(.system(size: 28, weight: .light))
                             .multilineTextAlignment(.center)
                     }
+                } else if let weatherError = weatherError {
+                    VStack(spacing: 12) {
+                        Text("Weather unavailable")
+                            .font(.system(size: 20, weight: .medium))
+                        Text(weatherError)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                        Button("Retry weather") {
+                            Task { await calculatePlan() }
+                        }
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(Color.watrPrimary)
+                    }
+                    .watrScreenHorizontalPadding()
                 } else if let plan = plan {
                     VStack(spacing: 32) {
                         Text("Your daily goal")
@@ -61,7 +77,7 @@ struct OnboardingCompleteView: View {
                 
                 Spacer()
                 
-                if !isCalculating {
+                if !isCalculating && plan != nil {
                     Button {
                         // Temporarily bypass paywall until Superwall is configured
                         saveAndContinue()
@@ -82,33 +98,39 @@ struct OnboardingCompleteView: View {
     
     func calculatePlan() async {
         let userProfile = profile.toUserProfile()
-        
-        // Fetch weather
-        let fetchedWeather = try? await weatherService.fetchCurrentConditions(
-            for: userProfile.zipCode
-        )
-        
-        let weatherData = fetchedWeather ?? WeatherData(
-            temperatureF: 72,
-            humidityPercent: 50,
-            condition: "Clear"
-        )
-        
-        let today = Calendar.current.component(.weekday, from: Date())
-        let isWorkoutDay = userProfile.workoutDays.contains(
-            UserProfile.Weekday(rawValue: today) ?? .monday
-        )
-        
-        let calculatedPlan = engine.calculate(
-            profile: userProfile,
-            weather: weatherData,
-            isWorkoutDay: isWorkoutDay
-        )
-        
         await MainActor.run {
-            self.weather = weatherData
-            self.plan = calculatedPlan
-            self.isCalculating = false
+            self.isCalculating = true
+            self.weatherError = nil
+        }
+
+        do {
+            let weatherData = try await weatherService.fetchCurrentConditions(
+                for: userProfile.zipCode
+            )
+            
+            let today = Calendar.current.component(.weekday, from: Date())
+            let isWorkoutDay = userProfile.workoutDays.contains(
+                UserProfile.Weekday(rawValue: today) ?? .monday
+            )
+            
+            let calculatedPlan = engine.calculate(
+                profile: userProfile,
+                weather: weatherData,
+                isWorkoutDay: isWorkoutDay
+            )
+            
+            await MainActor.run {
+                self.weather = weatherData
+                self.plan = calculatedPlan
+                self.isCalculating = false
+            }
+        } catch {
+            await MainActor.run {
+                self.weather = nil
+                self.plan = nil
+                self.weatherError = error.localizedDescription
+                self.isCalculating = false
+            }
         }
     }
     

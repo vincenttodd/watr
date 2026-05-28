@@ -86,9 +86,13 @@ class HydrationEngine {
         }
         
         let wakeHour = profile.weekdayWake.hour ?? 7
-        let sleepHour = profile.weekdaySleep.hour ?? 23
         let wakeMinute = profile.weekdayWake.minute ?? 0
-        let totalWakeMinutes = (sleepHour - wakeHour) * 60
+        let sleepHour = profile.weekdaySleep.hour ?? 23
+        let sleepMinute = profile.weekdaySleep.minute ?? 0
+
+        let wakeStartMinutes = minutesSinceMidnight(hour: wakeHour, minute: wakeMinute)
+        let sleepStartMinutes = minutesSinceMidnight(hour: sleepHour, minute: sleepMinute)
+        let totalWakeMinutes = minutesBetween(start: wakeStartMinutes, end: sleepStartMinutes)
         
         var cumulativeWeight = 0.0
         
@@ -100,16 +104,10 @@ class HydrationEngine {
             let startMinuteOffset = Int(cumulativeWeight * Double(totalWakeMinutes))
             cumulativeWeight += definition.weight
             
-            let startTotalMinutes = wakeHour * 60 + wakeMinute + startMinuteOffset
+            let startTotalMinutes = wakeStartMinutes + startMinuteOffset
             let endTotalMinutes = startTotalMinutes + Int(definition.weight * Double(totalWakeMinutes))
-            
-            var startComponents = DateComponents()
-            startComponents.hour = startTotalMinutes / 60
-            startComponents.minute = startTotalMinutes % 60
-            
-            var endComponents = DateComponents()
-            endComponents.hour = endTotalMinutes / 60
-            endComponents.minute = endTotalMinutes % 60
+            let startComponents = dateComponentsFromTotalMinutes(startTotalMinutes)
+            let endComponents = dateComponentsFromTotalMinutes(endTotalMinutes)
             
             return HydrationWindow(
                 id: UUID(),
@@ -125,7 +123,32 @@ class HydrationEngine {
     
     private func calculateWakeHours(profile: UserProfile) -> Double {
         let wakeHour = profile.weekdayWake.hour ?? 7
+        let wakeMinute = profile.weekdayWake.minute ?? 0
         let sleepHour = profile.weekdaySleep.hour ?? 23
-        return Double((sleepHour - wakeHour + 24) % 24)
+        let sleepMinute = profile.weekdaySleep.minute ?? 0
+
+        let wakeStartMinutes = minutesSinceMidnight(hour: wakeHour, minute: wakeMinute)
+        let sleepStartMinutes = minutesSinceMidnight(hour: sleepHour, minute: sleepMinute)
+        return Double(minutesBetween(start: wakeStartMinutes, end: sleepStartMinutes)) / 60.0
+    }
+
+    private func minutesSinceMidnight(hour: Int, minute: Int) -> Int {
+        (hour * 60) + minute
+    }
+
+    private func minutesBetween(start: Int, end: Int) -> Int {
+        let minutesInDay = 24 * 60
+        let normalized = (end - start + minutesInDay) % minutesInDay
+        return normalized == 0 ? minutesInDay : normalized
+    }
+
+    private func dateComponentsFromTotalMinutes(_ totalMinutes: Int) -> DateComponents {
+        let minutesInDay = 24 * 60
+        let normalized = ((totalMinutes % minutesInDay) + minutesInDay) % minutesInDay
+
+        var components = DateComponents()
+        components.hour = normalized / 60
+        components.minute = normalized % 60
+        return components
     }
 }

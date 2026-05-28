@@ -17,88 +17,91 @@ struct OnboardingSleepView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Sleep schedule")
-                        .watrScreenTitle()
-                    
-                    Text("This will be used to calibrate your custom plan.")
-                        .watrScreenSubtitle()
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .watrScreenHorizontalPadding()
-                .padding(.top, 48)
-                
-                Spacer()
-                
-                VStack(spacing: 20) {
-                    // Weekday schedule
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Weekdays")
-                            .watrSectionLabel()
-                            .watrScreenHorizontalPadding()
-                        
-                        HStack(spacing: 0) {
-                            VStack(spacing: 4) {
-                                Text("Wake")
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(.secondary)
-                                DatePicker(
-                                    "",
-                                    selection: Binding(
-                                        get: {
-                                            Calendar.current.date(
-                                                bySettingHour: profile.weekdayWakeHour,
-                                                minute: profile.weekdayWakeMinute,
-                                                second: 0,
-                                                of: Date()
-                                            ) ?? Date()
-                                        },
-                                        set: { newValue in
-                                            let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                                            profile.weekdayWakeHour = components.hour ?? 7
-                                            profile.weekdayWakeMinute = components.minute ?? 0
-                                        }
-                                    ),
-                                    displayedComponents: .hourAndMinute
-                                )
-                                .labelsHidden()
-                                .datePickerStyle(.wheel)
-                            }
-                            .frame(maxWidth: .infinity)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 28) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Sleep schedule")
+                                .watrScreenTitle()
                             
-                            VStack(spacing: 4) {
-                                Text("Sleep")
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(.secondary)
-                                DatePicker(
-                                    "",
-                                    selection: Binding(
-                                        get: {
-                                            Calendar.current.date(
-                                                bySettingHour: profile.weekdaySleepHour,
-                                                minute: profile.weekdaySleepMinute,
-                                                second: 0,
-                                                of: Date()
-                                            ) ?? Date()
-                                        },
-                                        set: { newValue in
-                                            let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                                            profile.weekdaySleepHour = components.hour ?? 23
-                                            profile.weekdaySleepMinute = components.minute ?? 0
-                                        }
-                                    ),
-                                    displayedComponents: .hourAndMinute
-                                )
-                                .labelsHidden()
-                                .datePickerStyle(.wheel)
+                            Text("This will be used to calibrate your custom plan.")
+                                .watrScreenSubtitle()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .watrScreenHorizontalPadding()
+                        .padding(.top, 48)
+                        
+                        // Weekday schedule
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Weekdays")
+                                .watrSectionLabel()
+                                .watrScreenHorizontalPadding()
+                            
+                            VStack(spacing: 12) {
+                                VStack(spacing: 4) {
+                                    Text("Wake")
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(.secondary)
+                                    DatePicker(
+                                        "",
+                                        selection: Binding(
+                                            get: {
+                                                Calendar.current.date(
+                                                    bySettingHour: profile.weekdayWakeHour,
+                                                    minute: profile.weekdayWakeMinute,
+                                                    second: 0,
+                                                    of: Date()
+                                                ) ?? Date()
+                                            },
+                                            set: { newValue in
+                                                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                                                profile.weekdayWakeHour = components.hour ?? 7
+                                                profile.weekdayWakeMinute = components.minute ?? 0
+                                            }
+                                        ),
+                                        displayedComponents: .hourAndMinute
+                                    )
+                                    .labelsHidden()
+                                    .datePickerStyle(.wheel)
+                                    .frame(maxWidth: .infinity)
+                                    .clipped()
+                                }
+                                
+                                VStack(spacing: 4) {
+                                    Text("Sleep")
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(.secondary)
+                                    DatePicker(
+                                        "",
+                                        selection: Binding(
+                                            get: {
+                                                Calendar.current.date(
+                                                    bySettingHour: profile.weekdaySleepHour,
+                                                    minute: profile.weekdaySleepMinute,
+                                                    second: 0,
+                                                    of: Date()
+                                                ) ?? Date()
+                                            },
+                                            set: { newValue in
+                                                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                                                profile.weekdaySleepHour = components.hour ?? 23
+                                                profile.weekdaySleepMinute = components.minute ?? 0
+                                            }
+                                        ),
+                                        displayedComponents: .hourAndMinute
+                                    )
+                                    .labelsHidden()
+                                    .datePickerStyle(.wheel)
+                                    .frame(maxWidth: .infinity)
+                                    .clipped()
+                                }
                             }
                             .frame(maxWidth: .infinity)
+                            .watrScreenHorizontalPadding()
                         }
-                        .watrScreenHorizontalPadding()
                     }
+                    .frame(maxWidth: .infinity, alignment: .top)
+                    .padding(.bottom, 24)
                 }
-                
-                Spacer()
                 
                 NavigationLink {
                     OnboardingWorkoutView()
@@ -108,6 +111,7 @@ struct OnboardingSleepView: View {
                         .watrPrimaryButton()
                 }
                 .watrScreenHorizontalPadding()
+                .padding(.top, 12)
                 .padding(.bottom, 48)
             }
         }

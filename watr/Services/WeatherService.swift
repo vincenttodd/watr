@@ -5,45 +5,67 @@
 //  Created by Vincent Todd on 5/18/26.
 //
 
+import CoreLocation
 import Foundation
+import WeatherKit
 
 class WeatherService {
-    private let apiKey = "your_openweather_api_key"
+    private let weatherKitService = WeatherKit.WeatherService()
+    private let geocoder = CLGeocoder()
     
     func fetchCurrentConditions(for zipCode: String) async throws -> WeatherData {
-        let urlString = "https://api.openweathermap.org/data/2.5/weather?zip=\(zipCode),us&appid=\(apiKey)&units=imperial"
-        
-        guard let url = URL(string: urlString) else {
-            throw WeatherError.invalidURL
+        let location = try await geocode(zipCode: zipCode)
+
+        do {
+            let weather = try await weatherKitService.weather(for: location)
+            let current = weather.currentWeather
+            
+            return WeatherData(
+                temperatureF: current.temperature.converted(to: .fahrenheit).value,
+                humidityPercent: current.humidity * 100,
+                condition: String(describing: current.condition).capitalized
+            )
+        } catch {
+            throw WeatherError.weatherKitFailed(error.localizedDescription)
         }
+    }
+    
+    private func geocode(zipCode: String) async throws -> CLLocation {
+        let query = "\(zipCode), US"
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode(OpenWeatherResponse.self, from: data)
-        
-        return WeatherData(
-            temperatureF: response.main.temp,
-            humidityPercent: Double(response.main.humidity),
-            condition: response.weather.first?.main ?? "Clear"
-        )
+        return try await withCheckedThrowingContinuation { continuation in
+            geocoder.geocodeAddressString(query) { placemarks, error in
+                if let error {
+                    continuation.resume(throwing: WeatherError.geocodingFailed(error.localizedDescription))
+                    return
+                }
+                
+                guard let location = placemarks?.first?.location else {
+                    continuation.resume(throwing: WeatherError.locationNotFound)
+                    return
+                }
+                
+                continuation.resume(returning: location)
+            }
+        }
     }
     
     enum WeatherError: Error {
-        case invalidURL
         case locationNotFound
+        case geocodingFailed(String)
+        case weatherKitFailed(String)
     }
 }
 
-// MARK: - Response Models
-struct OpenWeatherResponse: Decodable {
-    let main: Main
-    let weather: [Weather]
-    
-    struct Main: Decodable {
-        let temp: Double
-        let humidity: Int
-    }
-    
-    struct Weather: Decodable {
-        let main: String
+extension WeatherService.WeatherError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .locationNotFound:
+            return "Could not find location for this ZIP code."
+        case .geocodingFailed(let reason):
+            return "Could not resolve ZIP to location. \(reason)"
+        case .weatherKitFailed(let reason):
+            return "WeatherKit failed. \(reason)"
+        }
     }
 }

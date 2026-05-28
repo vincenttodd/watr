@@ -15,6 +15,7 @@ struct HomeView: View {
     
     @State private var plan: HydrationPlan? = nil
     @State private var weather: WeatherData? = nil
+    @State private var weatherError: String? = nil
     
     let engine = HydrationEngine()
     let weatherService = WeatherService()
@@ -34,8 +35,7 @@ struct HomeView: View {
                 .ignoresSafeArea()
             
             if let plan = plan {
-                ScrollView {
-                    VStack(spacing: 0) {
+                VStack(spacing: 0) {
                         // Header
                         HStack {
                             Text("watr")
@@ -68,8 +68,8 @@ struct HomeView: View {
                                     .padding(.bottom, 10)
                             }
                             
-                            if let condition = weather?.condition {
-                                Text("\(condition) · \(Int(weather?.temperatureF ?? 72))°F")
+                            if let weather = weather {
+                                Text("\(weather.condition) · \(Int(weather.temperatureF))°F")
                                     .font(.system(size: 14, weight: .light))
                                     .foregroundStyle(.secondary)
                             }
@@ -78,6 +78,7 @@ struct HomeView: View {
                         .watrScreenHorizontalPadding()
                         .padding(.bottom, 24)
                         
+                    ScrollView{
                         // Next window card
                         if let nextWindow = plan.nextWindow {
                             VStack(alignment: .leading, spacing: 8) {
@@ -121,45 +122,47 @@ struct HomeView: View {
                                 .padding(.bottom, 14)
                             
                             ForEach(plan.windows) { window in
-                                HStack {
-                                    Circle()
-                                        .frame(width: 8, height: 8)
+                            HStack {
+                                Circle()
+                                    .frame(width: 8, height: 8)
+                                    .foregroundStyle(
+                                        isNextWindow(window, plan: plan) ?
+                                        Color.watrPrimary :
+                                        Color.gray.opacity(0.3)
+                                    )
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(window.name)
+                                        .font(.system(size: 15, weight: .medium))
                                         .foregroundStyle(
                                             isNextWindow(window, plan: plan) ?
                                             Color.watrPrimary :
-                                            Color.gray.opacity(0.3)
+                                            .primary
                                         )
-                                    
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(window.name)
-                                            .font(.system(size: 15, weight: .medium))
-                                            .foregroundStyle(
-                                                isNextWindow(window, plan: plan) ?
-                                                Color.watrPrimary :
-                                                .primary
-                                            )
-                                        Text(windowTimeString(window))
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    HStack(alignment: .bottom, spacing: 2) {
-                                        Text("\(Int(window.minOz))–\(Int(window.maxOz))")
-                                            .font(.system(size: 20, weight: .light))
-                                        Text("oz")
-                                            .font(.system(size: 11))
-                                            .foregroundStyle(.secondary)
-                                            .padding(.bottom, 3)
-                                    }
+                                    Text(windowTimeString(window))
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.secondary)
                                 }
-                                .padding(.vertical, 14)
-                                .watrScreenHorizontalPadding()
-                                Divider()
-                                    .padding(.leading, 28)
+                                
+                                Spacer()
+                                
+                                HStack(alignment: .bottom, spacing: 2) {
+                                    Text("\(Int(window.minOz))–\(Int(window.maxOz))")
+                                        .font(.system(size: 20, weight: .light))
+                                    Text("oz")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(.secondary)
+                                        .padding(.bottom, 3)
+                                }
                             }
+                            .padding(.vertical, 14)
+                            .watrScreenHorizontalPadding()
+                            Divider()
+                                .padding(.leading, 28)
                         }
+                        }
+                    }
+                    .scrollIndicators(.hidden)
                         
                         NavigationLink {
                             CustomizeView()
@@ -172,7 +175,21 @@ struct HomeView: View {
                         
                         Spacer().frame(height: 48)
                     }
+            } else if let weatherError = weatherError {
+                VStack(spacing: 12) {
+                    Text("Weather unavailable")
+                        .font(.system(size: 20, weight: .medium))
+                    Text(weatherError)
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button("Retry weather") {
+                        Task { await loadPlan() }
+                    }
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(Color.watrPrimary)
                 }
+                .watrScreenHorizontalPadding()
             } else {
                 ProgressView()
                     .tint(Color.watrPrimary)
@@ -186,30 +203,36 @@ struct HomeView: View {
     
     func loadPlan() async {
         guard let profile = ProfileService.shared.load() else { return }
-        
-        let fetchedWeather = try? await weatherService.fetchCurrentConditions(
-            for: profile.zipCode
-        )
-        let weatherData = fetchedWeather ?? WeatherData(
-            temperatureF: 72,
-            humidityPercent: 50,
-            condition: "Clear"
-        )
-        
-        let today = Calendar.current.component(.weekday, from: Date())
-        let isWorkoutDay = profile.workoutDays.contains(
-            UserProfile.Weekday(rawValue: today) ?? .monday
-        )
-        
-        let calculatedPlan = engine.calculate(
-            profile: profile,
-            weather: weatherData,
-            isWorkoutDay: isWorkoutDay
-        )
-        
         await MainActor.run {
-            self.weather = weatherData
-            self.plan = calculatedPlan
+            self.weatherError = nil
+        }
+
+        do {
+            let weatherData = try await weatherService.fetchCurrentConditions(
+                for: profile.zipCode
+            )
+            
+            let today = Calendar.current.component(.weekday, from: Date())
+            let isWorkoutDay = profile.workoutDays.contains(
+                UserProfile.Weekday(rawValue: today) ?? .monday
+            )
+            
+            let calculatedPlan = engine.calculate(
+                profile: profile,
+                weather: weatherData,
+                isWorkoutDay: isWorkoutDay
+            )
+            
+            await MainActor.run {
+                self.weather = weatherData
+                self.plan = calculatedPlan
+            }
+        } catch {
+            await MainActor.run {
+                self.plan = nil
+                self.weather = nil
+                self.weatherError = error.localizedDescription
+            }
         }
     }
     

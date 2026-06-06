@@ -72,7 +72,7 @@ struct OnboardingWorkoutView: View {
                 Spacer()
                 
                 NavigationLink {
-                    OnboardingLocationView()
+                    OnboardingBirthDateView()
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")

@@ -73,14 +73,12 @@ struct OnboardingBodyView: View {
                 Spacer()
                 
                 NavigationLink {
-                    OnboardingSleepView()
+                    OnboardingCoachView()
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")
                         .watrPrimaryButton()
                 }
-                .watrScreenHorizontalPadding()
-                .padding(.bottom, 48)
             }
         }
         .navigationBarTitleDisplayMode(.inline)

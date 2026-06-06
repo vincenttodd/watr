@@ -1,15 +1,16 @@
 //
-//   OnboardingBirthDateView.swift
+//  OnboardingDrinkView.swift
 //  watr
 //
-//  Created by Vincent Todd on 5/19/26.
+//  Created by Vincent Todd on 6/6/26.
 //
 
 import SwiftUI
 
-struct OnboardingBirthDateView: View {
+struct OnboardingDrinkView: View {
     
     @EnvironmentObject var profile: OnboardingState
+    @State private var selected: String? = nil
     
     var body: some View {
         ZStack {
@@ -18,11 +19,8 @@ struct OnboardingBirthDateView: View {
             
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("When were\nyou born?")
+                    Text("What do you usually drink?")
                         .watrScreenTitle()
-                    
-                    Text("This will be used to calibrate your custom plan.")
-                        .watrScreenSubtitle()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .watrScreenHorizontalPadding()
@@ -30,20 +28,27 @@ struct OnboardingBirthDateView: View {
                 
                 Spacer()
                 
-                DatePicker(
-                    "Birth Date",
-                    selection: $profile.birthDate,
-                    in: ...Date(),
-                    displayedComponents: .date
-                )
-                .datePickerStyle(.wheel)
-                .labelsHidden()
+                VStack(spacing: 12) {
+                    ForEach(["Tap/purified water", "Spring water", "Coffee", "Tea", "Soda", "Other"], id: \.self) { drink in
+                        Button {
+                            selected = drink
+                        } label: {
+                            Text(drink)
+                                .watrSelectionButton()
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .strokeBorder(Color.watrPrimary, lineWidth: 2)
+                                        .opacity(selected == drink ? 1 : 0)
+                                )
+                        }
+                    }
+                }
                 .watrScreenHorizontalPadding()
                 
                 Spacer()
                 
                 NavigationLink {
-                    OnboardingPriorAppView()
+                    OnboardingGoalView()
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")

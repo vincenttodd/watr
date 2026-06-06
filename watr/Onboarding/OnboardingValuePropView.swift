@@ -1,13 +1,13 @@
 //
-//   OnboardingBirthDateView.swift
+//  OnboardingValuePropView.swift
 //  watr
 //
-//  Created by Vincent Todd on 5/19/26.
+//  Created by Vincent Todd on 6/6/26.
 //
 
 import SwiftUI
 
-struct OnboardingBirthDateView: View {
+struct OnboardingValuePropView: View {
     
     @EnvironmentObject var profile: OnboardingState
     
@@ -18,11 +18,8 @@ struct OnboardingBirthDateView: View {
             
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("When were\nyou born?")
+                    Text("WATR determines ideal water intake based on you and your environment so you stay hydrated")
                         .watrScreenTitle()
-                    
-                    Text("This will be used to calibrate your custom plan.")
-                        .watrScreenSubtitle()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .watrScreenHorizontalPadding()
@@ -30,20 +27,8 @@ struct OnboardingBirthDateView: View {
                 
                 Spacer()
                 
-                DatePicker(
-                    "Birth Date",
-                    selection: $profile.birthDate,
-                    in: ...Date(),
-                    displayedComponents: .date
-                )
-                .datePickerStyle(.wheel)
-                .labelsHidden()
-                .watrScreenHorizontalPadding()
-                
-                Spacer()
-                
                 NavigationLink {
-                    OnboardingPriorAppView()
+                    OnboardingSleepView()
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")

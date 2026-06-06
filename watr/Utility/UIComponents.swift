@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 extension Color {
@@ -9,6 +8,12 @@ extension Color {
     static let watrSecondaryButtonBackground = Color.watrPrimary.opacity(0.08)
     static let watrPrimarySoft = Color.watrPrimary.opacity(0.1)
     static let watrNeutralButtonBackground = Color(red: 0.922, green: 0.929, blue: 0.941)
+}
+
+extension Font {
+    static func unica(_ size: CGFloat) -> Font {
+        Font.custom("NeueHaasUnicaRegular", size: size)
+    }
 }
 
 extension View {
@@ -24,7 +29,7 @@ extension View {
 
     func watrIconBadge() -> some View {
         self
-            .font(.system(size: 15))
+            .font(.unica(15))
             .foregroundStyle(Color.watrPrimary)
             .frame(width: 32, height: 32)
             .background(Color.watrPrimarySoft)
@@ -33,24 +38,24 @@ extension View {
 
     func watrPrimaryButton(enabled: Bool = true) -> some View {
         self
-            .font(.system(size: 17, weight: .medium))
+            .font(.unica(17))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(enabled ? Color(red: 0.082, green: 0.082, blue: 0.082) : Color.gray.opacity(0.4))
             .clipShape(RoundedRectangle(cornerRadius: 40))
     }
-    
+
     func watrSelectionButton() -> some View {
         self
-            .font(.system(size: 17, weight: .regular))
+            .font(.unica(17))
             .foregroundStyle(.primary)
             .frame(maxWidth: .infinity)
             .frame(height: 69)
             .background(Color.watrNeutralButtonBackground)
             .clipShape(RoundedRectangle(cornerRadius: 10))
     }
-    
+
     func watrSecondaryButtonBackground(
         selected: Bool = false,
         cornerRadius: CGFloat = 14
@@ -61,18 +66,18 @@ extension View {
     }
 
     func watrScreenTitle() -> some View {
-        self.font(.system(size: 34, weight: .light))
+        self.font(.unica(34))
     }
 
     func watrScreenSubtitle() -> some View {
         self
-            .font(.system(size: 16, weight: .light))
+            .font(.unica(16))
             .foregroundStyle(.secondary)
     }
 
     func watrSectionLabel() -> some View {
         self
-            .font(.system(size: 11, weight: .medium))
+            .font(.unica(11))
             .foregroundStyle(.secondary)
             .textCase(.uppercase)
             .tracking(1)

@@ -50,7 +50,7 @@ struct OnboardingSexView: View {
                 Spacer()
                 
                 NavigationLink {
-                    OnboardingBirthDateView()
+                    OnboardingWorkoutView()
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")

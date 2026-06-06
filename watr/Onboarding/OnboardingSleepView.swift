@@ -104,7 +104,7 @@ struct OnboardingSleepView: View {
                 }
                 
                 NavigationLink {
-                    OnboardingWorkoutView()
+                    OnboardingBodyView()
                         .environmentObject(profile)
                 } label: {
                     Text("Continue")

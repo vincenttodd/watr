@@ -149,7 +149,7 @@ struct OnboardingLocationView: View {
             }
 
             NavigationLink {
-                OnboardingCompleteView()
+                OnboardingNotificationView()
                     .environmentObject(profile)
             } label: {
                 Text("Continue")

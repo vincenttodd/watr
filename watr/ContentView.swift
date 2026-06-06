@@ -22,8 +22,5 @@ struct ContentView: View {
                 OnboardingWelcomeView()
             }
         }
-        .task {
-            await subscriptionService.checkSubscription()
-        }
     }
 }

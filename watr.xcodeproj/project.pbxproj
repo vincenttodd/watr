@@ -14,9 +14,22 @@
 		45715B9B2FBBE35000B0BA5A /* watr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = watr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		453B82DF2FD46BBA00A24D24 /* Exceptions for "watr" folder in "watr" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 45715B9A2FBBE35000B0BA5A /* watr */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		45715B9D2FBBE35000B0BA5A /* watr */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				453B82DF2FD46BBA00A24D24 /* Exceptions for "watr" folder in "watr" target */,
+			);
 			path = watr;
 			sourceTree = "<group>";
 		};
@@ -267,10 +280,10 @@
 				DEVELOPMENT_TEAM = F5QNV947ZV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = watr/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to estimate local weather for your hydration plan.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -304,10 +317,10 @@
 				DEVELOPMENT_TEAM = F5QNV947ZV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = watr/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to estimate local weather for your hydration plan.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;

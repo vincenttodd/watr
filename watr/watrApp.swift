@@ -15,7 +15,7 @@ struct watrApp: App {
     
     init() {
         // Configure Superwall
-        Superwall.configure(apiKey: "your_superwall_api_key")
+        Superwall.configure(apiKey: "pk_EjW84d2c2KcMOK_BZzMgg")
         
         // Register notification categories
         NotificationService.shared.registerCategories()

@@ -78,13 +78,16 @@ struct OnboardingCompleteView: View {
                 Spacer()
                 
                 if !isCalculating && plan != nil {
-                    Button {
-                        // Temporarily bypass paywall until Superwall is configured
-                        saveAndContinue()
+                    NavigationLink {
+                        OnboardingTrialView()
+                            .environmentObject(profile)
                     } label: {
-                        Text("Start drinking")
+                        Text("Continue")
                             .watrPrimaryButton()
                     }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        saveAndContinue()
+                    })
                     .watrScreenHorizontalPadding()
                     .padding(.bottom, 48)
                 }

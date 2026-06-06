@@ -11,11 +11,6 @@ struct OnboardingWorkoutView: View {
     
     @EnvironmentObject var profile: OnboardingState
     
-    let days: [(String, UserProfile.Weekday)] = [
-        ("Mon", .monday), ("Tue", .tuesday), ("Wed", .wednesday),
-        ("Thu", .thursday), ("Fri", .friday), ("Sat", .saturday), ("Sun", .sunday)
-    ]
-    
     var body: some View {
         ZStack {
             Color.watrScreenBackground
@@ -23,7 +18,7 @@ struct OnboardingWorkoutView: View {
             
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Workout\nschedule")
+                    Text("How often do\nyou work out?")
                         .watrScreenTitle()
                     
                     Text("This will be used to calibrate your custom plan.")
@@ -35,78 +30,44 @@ struct OnboardingWorkoutView: View {
                 
                 Spacer()
                 
-                VStack(spacing: 24) {
-                    // Workout days
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Which days do you work out?")
-                            .font(.system(size: 15, weight: .medium))
-                            .watrScreenHorizontalPadding()
-                        
-                        HStack(spacing: 8) {
-                            ForEach(days, id: \.0) { label, day in
-                                Button {
-                                    if profile.workoutDays.contains(day) {
-                                        profile.workoutDays.removeAll { $0 == day }
-                                    } else {
-                                        profile.workoutDays.append(day)
-                                    }
-                                } label: {
-                                    Text(label)
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(
-                                            profile.workoutDays.contains(day) ? .white : .primary
-                                        )
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 40)
-                                        .background(
-                                            profile.workoutDays.contains(day) ?
-                                            Color.watrPrimary :
-                                            Color.watrSurface
-                                        )
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                }
-                            }
-                        }
-                        .watrScreenHorizontalPadding()
+                VStack(spacing: 12) {
+                    Button {
+                        profile.workoutIntensity = .light
+                    } label: {
+                        Text("0–2 times per week")
+                            .watrSelectionButton()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .strokeBorder(Color.watrPrimary, lineWidth: 2)
+                                    .opacity(profile.workoutIntensity == .light ? 1 : 0)
+                            )
                     }
                     
-                    // Workout intensity
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("How intense are your workouts?")
-                            .font(.system(size: 15, weight: .medium))
-                            .watrScreenHorizontalPadding()
-                        
-                        VStack(spacing: 8) {
-                            ForEach(UserProfile.WorkoutIntensity.allCases, id: \.self) { intensity in
-                                Button {
-                                    profile.workoutIntensity = intensity
-                                } label: {
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(intensity.rawValue.capitalized)
-                                                .font(.system(size: 16))
-                                                .foregroundStyle(.primary)
-                                            Text(intensityDescription(intensity))
-                                                .font(.system(size: 13))
-                                                .foregroundStyle(.secondary)
-                                        }
-                                        Spacer()
-                                        if profile.workoutIntensity == intensity {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .foregroundStyle(Color.watrPrimary)
-                                        }
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .frame(height: 60)
-                                    .watrSecondaryButtonBackground(
-                                        selected: profile.workoutIntensity == intensity
-                                    )
-                                }
-                            }
-                        }
-                        .watrScreenHorizontalPadding()
+                    Button {
+                        profile.workoutIntensity = .moderate
+                    } label: {
+                        Text("3–5 times per week")
+                            .watrSelectionButton()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .strokeBorder(Color.watrPrimary, lineWidth: 2)
+                                    .opacity(profile.workoutIntensity == .moderate ? 1 : 0)
+                            )
+                    }
+                    
+                    Button {
+                        profile.workoutIntensity = .heavy
+                    } label: {
+                        Text("6+ times per week")
+                            .watrSelectionButton()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .strokeBorder(Color.watrPrimary, lineWidth: 2)
+                                    .opacity(profile.workoutIntensity == .heavy ? 1 : 0)
+                            )
                     }
                 }
+                .watrScreenHorizontalPadding()
                 
                 Spacer()
                 
@@ -122,14 +83,5 @@ struct OnboardingWorkoutView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-    }
-    
-    func intensityDescription(_ intensity: UserProfile.WorkoutIntensity) -> String {
-        switch intensity {
-        case .none:     return "I don't work out"
-        case .light:    return "1–2 sessions per week"
-        case .moderate: return "3–5 sessions per week"
-        case .heavy:    return "6+ sessions per week"
-        }
     }
 }

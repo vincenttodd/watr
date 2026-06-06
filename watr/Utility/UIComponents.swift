@@ -2,13 +2,13 @@
 import SwiftUI
 
 extension Color {
-    static let watrScreenBackground = Color(red: 0.957, green: 0.945, blue: 0.925)
+    static let watrScreenBackground = Color.white
     static let watrPrimary = Color(red: 0.18, green: 0.35, blue: 0.24)
     static let watrPrimaryDisabled = Color.gray.opacity(0.4)
     static let watrSurface = Color.white
     static let watrSecondaryButtonBackground = Color.watrPrimary.opacity(0.08)
     static let watrPrimarySoft = Color.watrPrimary.opacity(0.1)
-    static let watrNeutralButtonBackground = Color.gray.opacity(0.1)
+    static let watrNeutralButtonBackground = Color(red: 0.922, green: 0.929, blue: 0.941)
 }
 
 extension View {
@@ -36,11 +36,21 @@ extension View {
             .font(.system(size: 17, weight: .medium))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .background(enabled ? Color.watrPrimary : Color.watrPrimaryDisabled)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .frame(height: 56)
+            .background(enabled ? Color(red: 0.082, green: 0.082, blue: 0.082) : Color.gray.opacity(0.4))
+            .clipShape(RoundedRectangle(cornerRadius: 40))
     }
-
+    
+    func watrSelectionButton() -> some View {
+        self
+            .font(.system(size: 17, weight: .regular))
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 69)
+            .background(Color.watrNeutralButtonBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+    
     func watrSecondaryButtonBackground(
         selected: Bool = false,
         cornerRadius: CGFloat = 14

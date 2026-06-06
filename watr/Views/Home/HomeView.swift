@@ -199,6 +199,14 @@ struct HomeView: View {
         .task {
             await loadPlan()
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { !subscriptionService.isSubscribed },
+            set: { _ in }
+        )) {
+            Color.clear.onAppear {
+                SubscriptionService.shared.showPaywall(from: "onboarding_complete")
+            }
+        }
     }
     
     func loadPlan() async {

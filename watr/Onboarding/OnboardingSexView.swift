@@ -35,19 +35,13 @@ struct OnboardingSexView: View {
                         Button {
                             profile.sex = sex
                         } label: {
-                            HStack {
-                                Text(sex.rawValue.capitalized)
-                                    .font(.system(size: 17))
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                if profile.sex == sex {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(Color.watrPrimary)
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                            .frame(height: 56)
-                            .watrSecondaryButtonBackground(selected: profile.sex == sex)
+                            Text(sex.rawValue.capitalized)
+                                .watrSelectionButton()
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .strokeBorder(Color.watrPrimary, lineWidth: 2)
+                                        .opacity(profile.sex == sex ? 1 : 0)
+                                )
                         }
                     }
                 }

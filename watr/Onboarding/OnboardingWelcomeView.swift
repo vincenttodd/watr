@@ -21,16 +21,10 @@ struct OnboardingWelcomeView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     
-                    VStack(spacing: 16) {
-                        Text("watr")
-                            .font(.system(size: 52, weight: .light))
-                            .tracking(8)
-                        
-                        Text("Staying hydrated,\nmade effortless.")
-                            .font(.system(size: 20, weight: .light))
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                    }
+                    Image("WATRLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 160)
                     
                     Spacer()
                     

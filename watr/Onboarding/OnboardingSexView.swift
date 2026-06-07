@@ -10,6 +10,7 @@ import SwiftUI
 struct OnboardingSexView: View {
     
     @EnvironmentObject var profile: OnboardingState
+    @State private var navigate = false
     
     var body: some View {
         ZStack {
@@ -34,32 +35,22 @@ struct OnboardingSexView: View {
                     ForEach(UserProfile.Sex.allCases, id: \.self) { sex in
                         Button {
                             profile.sex = sex
+                            navigate = true
                         } label: {
                             Text(sex.rawValue.capitalized)
                                 .watrSelectionButton()
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .strokeBorder(Color.watrPrimary, lineWidth: 2)
-                                        .opacity(profile.sex == sex ? 1 : 0)
-                                )
                         }
                     }
                 }
                 .watrScreenHorizontalPadding()
                 
                 Spacer()
-                
-                NavigationLink {
-                    OnboardingWorkoutView()
-                        .environmentObject(profile)
-                } label: {
-                    Text("Continue")
-                        .watrPrimaryButton()
-                }
-                .watrScreenHorizontalPadding()
-                .padding(.bottom, 48)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $navigate) {
+            OnboardingWorkoutView()
+                .environmentObject(profile)
+        }
     }
 }

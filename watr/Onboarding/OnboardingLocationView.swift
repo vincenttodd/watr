@@ -62,7 +62,7 @@ struct OnboardingLocationView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $continueWithAutoLocation) {
-            OnboardingCompleteView()
+            OnboardingNotificationView()
                 .environmentObject(profile)
         }
         .onChange(of: locationModel.resolvedZip) { resolvedZip in

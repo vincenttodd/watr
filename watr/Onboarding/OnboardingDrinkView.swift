@@ -10,7 +10,7 @@ import SwiftUI
 struct OnboardingDrinkView: View {
     
     @EnvironmentObject var profile: OnboardingState
-    @State private var selected: String? = nil
+    @State private var navigate = false
     
     var body: some View {
         ZStack {
@@ -31,33 +31,22 @@ struct OnboardingDrinkView: View {
                 VStack(spacing: 12) {
                     ForEach(["Tap/purified water", "Spring water", "Coffee", "Tea", "Soda", "Other"], id: \.self) { drink in
                         Button {
-                            selected = drink
+                            navigate = true
                         } label: {
                             Text(drink)
                                 .watrSelectionButton()
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .strokeBorder(Color.watrPrimary, lineWidth: 2)
-                                        .opacity(selected == drink ? 1 : 0)
-                                )
                         }
                     }
                 }
                 .watrScreenHorizontalPadding()
                 
                 Spacer()
-                
-                NavigationLink {
-                    OnboardingGoalView()
-                        .environmentObject(profile)
-                } label: {
-                    Text("Continue")
-                        .watrPrimaryButton()
-                }
-                .watrScreenHorizontalPadding()
-                .padding(.bottom, 48)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $navigate) {
+            OnboardingGoalView()
+                .environmentObject(profile)
+        }
     }
 }

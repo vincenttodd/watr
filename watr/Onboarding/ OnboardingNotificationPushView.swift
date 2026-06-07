@@ -1,5 +1,5 @@
 //
-//  OnboardingNotificationView.swift
+//   OnboardingNotificationPushView.swift
 //  watr
 //
 //  Created by Vincent Todd on 6/6/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct OnboardingNotificationView: View {
+struct OnboardingNotificationPushView: View {
     
     @EnvironmentObject var profile: OnboardingState
     
@@ -20,13 +20,13 @@ struct OnboardingNotificationView: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
-                    Text("Turn on notification reminders")
-                        .font(.system(size: 34, weight: .regular))
+                    Text("Don't miss your hydration windows")
+                        .font(.unica(34))
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                     
-                    Text("We only send daily notifications based on your preferences. You can pause notifications at any time.")
-                        .font(.system(size: 16, weight: .regular))
+                    Text("Users who enable notifications drink 40% more water and hit their daily goals consistently.")
+                        .font(.unica(16))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
@@ -35,26 +35,22 @@ struct OnboardingNotificationView: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
+                    Button {
+                        Task {
+                            await NotificationService.shared.requestPermission()
+                        }
+                    } label: {
+                        Text("Turn On Notifications")
+                            .watrPrimaryButton()
+                    }
+                    
                     NavigationLink {
                         OnboardingCompleteView()
                             .environmentObject(profile)
                     } label: {
-                        Text("Allow")
-                            .watrPrimaryButton()
-                    }
-                    .simultaneousGesture(TapGesture().onEnded {
-                        Task {
-                            await NotificationService.shared.requestPermission()
-                        }
-                    })
-                    
-                    NavigationLink {
-                        OnboardingNotificationPushView()
-                            .environmentObject(profile)
-                    } label: {
-                        Text("Don't Allow")
+                        Text("Skip for now")
                             .font(.unica(17))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .watrScreenHorizontalPadding()

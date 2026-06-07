@@ -10,6 +10,7 @@ import SwiftUI
 struct OnboardingWorkoutView: View {
     
     @EnvironmentObject var profile: OnboardingState
+    @State private var navigate = false
     
     var body: some View {
         ZStack {
@@ -33,55 +34,37 @@ struct OnboardingWorkoutView: View {
                 VStack(spacing: 12) {
                     Button {
                         profile.workoutIntensity = .light
+                        navigate = true
                     } label: {
                         Text("0–2 times per week")
                             .watrSelectionButton()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .strokeBorder(Color.watrPrimary, lineWidth: 2)
-                                    .opacity(profile.workoutIntensity == .light ? 1 : 0)
-                            )
                     }
                     
                     Button {
                         profile.workoutIntensity = .moderate
+                        navigate = true
                     } label: {
                         Text("3–5 times per week")
                             .watrSelectionButton()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .strokeBorder(Color.watrPrimary, lineWidth: 2)
-                                    .opacity(profile.workoutIntensity == .moderate ? 1 : 0)
-                            )
                     }
                     
                     Button {
                         profile.workoutIntensity = .heavy
+                        navigate = true
                     } label: {
                         Text("6+ times per week")
                             .watrSelectionButton()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .strokeBorder(Color.watrPrimary, lineWidth: 2)
-                                    .opacity(profile.workoutIntensity == .heavy ? 1 : 0)
-                            )
                     }
                 }
                 .watrScreenHorizontalPadding()
                 
                 Spacer()
-                
-                NavigationLink {
-                    OnboardingBirthDateView()
-                        .environmentObject(profile)
-                } label: {
-                    Text("Continue")
-                        .watrPrimaryButton()
-                }
-                .watrScreenHorizontalPadding()
-                .padding(.bottom, 48)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $navigate) {
+            OnboardingBirthDateView()
+                .environmentObject(profile)
+        }
     }
 }

@@ -79,6 +79,8 @@ struct OnboardingBodyView: View {
                     Text("Continue")
                         .watrPrimaryButton()
                 }
+                .watrScreenHorizontalPadding()
+                .padding(.bottom, 48)
             }
         }
         .navigationBarTitleDisplayMode(.inline)

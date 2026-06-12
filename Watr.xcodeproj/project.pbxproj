@@ -104,7 +104,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 45715B962FBBE35000B0BA5A /* Build configuration list for PBXProject "watr" */;
+			buildConfigurationList = 45715B962FBBE35000B0BA5A /* Build configuration list for PBXProject "Watr" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -284,6 +284,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to estimate local weather for your hydration plan.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -321,6 +322,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to estimate local weather for your hydration plan.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -345,7 +347,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		45715B962FBBE35000B0BA5A /* Build configuration list for PBXProject "watr" */ = {
+		45715B962FBBE35000B0BA5A /* Build configuration list for PBXProject "Watr" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				45715BA42FBBE35100B0BA5A /* Debug */,

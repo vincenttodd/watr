@@ -33,7 +33,7 @@ struct OnboardingLocationView: View {
 
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Where are\nyou located?")
+                    Text("Where are you located?")
                         .watrScreenTitle()
 
                     Text("We use your location to calculate hydration based on local weather.")
@@ -57,7 +57,6 @@ struct OnboardingLocationView: View {
                     zipFallbackView
                 }
             }
-            .watrScreenHorizontalPadding()
             .padding(.bottom, 48)
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -87,10 +86,10 @@ struct OnboardingLocationView: View {
         VStack(spacing: 14) {
             if let errorMessage = locationModel.errorMessage {
                 Text(errorMessage)
-                    .font(.system(size: 14))
+                    .font(.unica(14))
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
 
             Button {
@@ -106,30 +105,27 @@ struct OnboardingLocationView: View {
                 zipFocused = true
             } label: {
                 Text("Enter ZIP Instead")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(Color.watrPrimary)
+                    .watrLinkButton()
             }
         }
+        .watrScreenHorizontalPadding()
     }
 
     private var locationPreviewCard: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
             Text("72°F")
                 .font(.system(size: 64, weight: .light))
 
             Text("Local weather preview")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.secondary)
+                .font(.unica(15))
+                .foregroundStyle(.primary)
 
-            Text("Used to personalize your hydration target for heat and humidity.")
-                .font(.system(size: 14))
+            Text("Your local temperature and humidity are used to adjust your daily hydration target automatically.")
+                .font(.unica(14))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-
-            Text("Only used to estimate weather for your plan.")
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
         }
+        .watrScreenHorizontalPadding()
     }
 
     private var zipFallbackView: some View {
@@ -157,6 +153,7 @@ struct OnboardingLocationView: View {
             }
             .disabled(!isZipValid)
         }
+        .watrScreenHorizontalPadding()
     }
 }
 

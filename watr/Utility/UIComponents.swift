@@ -54,6 +54,14 @@ extension View {
             .frame(height: 69)
             .background(Color.watrNeutralButtonBackground)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .tint(.primary)
+    }
+
+    func watrLinkButton() -> some View {
+        self
+            .font(.unica(15))
+            .foregroundStyle(.primary)
+            .tint(.primary)
     }
 
     func watrSecondaryButtonBackground(

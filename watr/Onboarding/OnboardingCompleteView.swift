@@ -30,46 +30,44 @@ struct OnboardingCompleteView: View {
                 Spacer()
                 
                 if isCalculating {
-                    VStack(spacing: 20) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(Color.watrPrimary)
+                    VStack(spacing: 24) {
+                        WatrLoadingView()
                         
                         Text("Setting everything\nup for you")
-                            .font(.system(size: 28, weight: .light))
+                            .font(.unica(28))
                             .multilineTextAlignment(.center)
                     }
                 } else if let weatherError = weatherError {
                     VStack(spacing: 12) {
                         Text("Weather unavailable")
-                            .font(.system(size: 20, weight: .medium))
+                            .font(.unica(20))
                         Text(weatherError)
-                            .font(.system(size: 14))
+                            .font(.unica(14))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                         Button("Retry weather") {
                             Task { await calculatePlan() }
                         }
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.watrPrimary)
+                        .watrLinkButton()
                     }
                     .watrScreenHorizontalPadding()
                 } else if let plan = plan {
                     VStack(spacing: 32) {
-                        Text("Your daily goal")
-                            .watrSectionLabel()
+                        Text("Your goal today")
+                            .watrScreenTitle()
+                            .multilineTextAlignment(.center)
                         
                         HStack(alignment: .bottom, spacing: 4) {
                             Text("\(Int(plan.totalOz))")
-                                .font(.system(size: 80, weight: .light))
+                                .font(.unica(80))
                             Text("oz")
-                                .font(.system(size: 24, weight: .light))
+                                .font(.unica(24))
                                 .padding(.bottom, 16)
                                 .foregroundStyle(.secondary)
                         }
                         
-                        Text("Based on your body, schedule,\nand current weather.")
-                            .font(.system(size: 16, weight: .light))
+                        Text("Based on your body, activity,\nand current weather.")
+                            .font(.unica(16))
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.secondary)
                     }
@@ -107,10 +105,11 @@ struct OnboardingCompleteView: View {
         }
 
         do {
-            let weatherData = try await weatherService.fetchCurrentConditions(
-                for: userProfile.zipCode
-            )
-            
+            async let weatherFetch = weatherService.fetchCurrentConditions(for: userProfile.zipCode)
+            async let minimumDelay: Void = Task.sleep(nanoseconds: 1_800_000_000)
+
+            let (weatherData, _) = try await (weatherFetch, minimumDelay)
+
             let today = Calendar.current.component(.weekday, from: Date())
             let isWorkoutDay = userProfile.workoutDays.contains(
                 UserProfile.Weekday(rawValue: today) ?? .monday
@@ -146,5 +145,19 @@ struct OnboardingCompleteView: View {
         }
         
         hasCompletedOnboarding = true
+    }
+}
+
+struct WatrLoadingView: View {
+    @State private var isAnimating = false
+
+    var body: some View {
+        Circle()
+            .trim(from: 0, to: 0.7)
+            .stroke(Color.primary, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+            .frame(width: 28, height: 28)
+            .rotationEffect(.degrees(isAnimating ? 360 : 0))
+            .animation(.linear(duration: 0.8).repeatForever(autoreverses: false), value: isAnimating)
+            .onAppear { isAnimating = true }
     }
 }

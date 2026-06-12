@@ -10,6 +10,7 @@ import SwiftUI
 struct OnboardingNotificationPushView: View {
     
     @EnvironmentObject var profile: OnboardingState
+    @State private var navigate = false
     
     var body: some View {
         ZStack {
@@ -21,13 +22,12 @@ struct OnboardingNotificationPushView: View {
                 
                 VStack(spacing: 16) {
                     Text("Don't miss your hydration windows")
-                        .font(.unica(34))
+                        .watrScreenTitle()
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                     
                     Text("Users who enable notifications drink 40% more water and hit their daily goals consistently.")
-                        .font(.unica(16))
-                        .foregroundStyle(.secondary)
+                        .watrScreenSubtitle()
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                 }
@@ -38,6 +38,7 @@ struct OnboardingNotificationPushView: View {
                     Button {
                         Task {
                             await NotificationService.shared.requestPermission()
+                            navigate = true
                         }
                     } label: {
                         Text("Turn On Notifications")
@@ -49,8 +50,7 @@ struct OnboardingNotificationPushView: View {
                             .environmentObject(profile)
                     } label: {
                         Text("Skip for now")
-                            .font(.unica(17))
-                            .foregroundStyle(.secondary)
+                            .watrLinkButton()
                     }
                 }
                 .watrScreenHorizontalPadding()
@@ -58,5 +58,9 @@ struct OnboardingNotificationPushView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $navigate) {
+            OnboardingCompleteView()
+                .environmentObject(profile)
+        }
     }
 }

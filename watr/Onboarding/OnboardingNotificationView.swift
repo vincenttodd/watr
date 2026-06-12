@@ -21,13 +21,12 @@ struct OnboardingNotificationView: View {
                 
                 VStack(spacing: 16) {
                     Text("Turn on notification reminders")
-                        .font(.system(size: 34, weight: .regular))
+                        .watrScreenTitle()
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                     
                     Text("We only send daily notifications based on your preferences. You can pause notifications at any time.")
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundStyle(.secondary)
+                        .watrScreenSubtitle()
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                 }
@@ -53,8 +52,7 @@ struct OnboardingNotificationView: View {
                             .environmentObject(profile)
                     } label: {
                         Text("Don't Allow")
-                            .font(.unica(17))
-                            .foregroundStyle(.primary)
+                            .watrLinkButton()
                     }
                 }
                 .watrScreenHorizontalPadding()

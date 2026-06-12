@@ -19,9 +19,10 @@ class OnboardingState: ObservableObject {
     @Published var weekdayWakeMinute: Int = 0
     @Published var weekdaySleepHour: Int = 23
     @Published var weekdaySleepMinute: Int = 0
-    @Published var weekendWakeHour: Int = 8
+    @Published var sameScheduleOnWeekends: Bool = true
+    @Published var weekendWakeHour: Int = 7
     @Published var weekendWakeMinute: Int = 0
-    @Published var weekendSleepHour: Int = 0
+    @Published var weekendSleepHour: Int = 23
     @Published var weekendSleepMinute: Int = 0
     @Published var workoutDays: [UserProfile.Weekday] = []
     @Published var workoutIntensity: UserProfile.WorkoutIntensity = .none
@@ -36,13 +37,18 @@ class OnboardingState: ObservableObject {
         weekdaySleep.hour = weekdaySleepHour
         weekdaySleep.minute = weekdaySleepMinute
         
+        let resolvedWeekendWakeHour = sameScheduleOnWeekends ? weekdayWakeHour : weekendWakeHour
+        let resolvedWeekendWakeMinute = sameScheduleOnWeekends ? weekdayWakeMinute : weekendWakeMinute
+        let resolvedWeekendSleepHour = sameScheduleOnWeekends ? weekdaySleepHour : weekendSleepHour
+        let resolvedWeekendSleepMinute = sameScheduleOnWeekends ? weekdaySleepMinute : weekendSleepMinute
+
         var weekendWake = DateComponents()
-        weekendWake.hour = weekendWakeHour
-        weekendWake.minute = weekendWakeMinute
-        
+        weekendWake.hour = resolvedWeekendWakeHour
+        weekendWake.minute = resolvedWeekendWakeMinute
+
         var weekendSleep = DateComponents()
-        weekendSleep.hour = weekendSleepHour
-        weekendSleep.minute = weekendSleepMinute
+        weekendSleep.hour = resolvedWeekendSleepHour
+        weekendSleep.minute = resolvedWeekendSleepMinute
         
         return UserProfile(
             sex: sex,

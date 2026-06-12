@@ -33,7 +33,17 @@ struct OnboardingWorkoutView: View {
                 
                 VStack(spacing: 12) {
                     Button {
+                        profile.workoutIntensity = .none
+                        profile.workoutDays = []
+                        navigate = true
+                    } label: {
+                        Text("I don't work out")
+                            .watrSelectionButton()
+                    }
+
+                    Button {
                         profile.workoutIntensity = .light
+                        profile.workoutDays = [.monday, .thursday]
                         navigate = true
                     } label: {
                         Text("0–2 times per week")
@@ -42,6 +52,7 @@ struct OnboardingWorkoutView: View {
                     
                     Button {
                         profile.workoutIntensity = .moderate
+                        profile.workoutDays = [.monday, .tuesday, .wednesday, .thursday, .friday]
                         navigate = true
                     } label: {
                         Text("3–5 times per week")
@@ -50,6 +61,7 @@ struct OnboardingWorkoutView: View {
                     
                     Button {
                         profile.workoutIntensity = .heavy
+                        profile.workoutDays = [.sunday, .monday, .tuesday, .wednesday, .thursday, .friday]
                         navigate = true
                     } label: {
                         Text("6+ times per week")

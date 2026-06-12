@@ -6,18 +6,16 @@
 //
 
 import SwiftUI
-import SuperwallKit
 
 @main
 struct watrApp: App {
-    
+
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var subscriptionService = SubscriptionService.shared
-    
+    @Environment(\.scenePhase) private var scenePhase
+
     init() {
-        // Configure Superwall
-        Superwall.configure(apiKey: "pk_EjW84d2c2KcMOK_BZzMgg")
-        
-        // Register notification categories
+        SubscriptionService.shared.start()
         NotificationService.shared.registerCategories()
     }
     
@@ -25,6 +23,11 @@ struct watrApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(subscriptionService)
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        Task { await SubscriptionService.shared.refreshSubscriptionStatus() }
+                    }
+                }
         }
     }
 }

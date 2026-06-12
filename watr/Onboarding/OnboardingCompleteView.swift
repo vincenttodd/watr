@@ -10,13 +10,14 @@ import SwiftUI
 struct OnboardingCompleteView: View {
     
     @EnvironmentObject var profile: OnboardingState
-    @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false
-    @StateObject private var subscriptionService = SubscriptionService.shared
+    @EnvironmentObject private var subscriptionService: SubscriptionService
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     
     @State private var isCalculating = true
     @State private var plan: HydrationPlan? = nil
     @State private var weather: WeatherData? = nil
     @State private var weatherError: String? = nil
+    @State private var showTrial = false
     
     let engine = HydrationEngine()
     let weatherService = WeatherService()
@@ -39,22 +40,7 @@ struct OnboardingCompleteView: View {
                             .font(.system(size: 28, weight: .light))
                             .multilineTextAlignment(.center)
                     }
-                } else if let weatherError = weatherError {
-                    VStack(spacing: 12) {
-                        Text("Weather unavailable")
-                            .font(.system(size: 20, weight: .medium))
-                        Text(weatherError)
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                        Button("Retry weather") {
-                            Task { await calculatePlan() }
-                        }
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.watrPrimary)
-                    }
-                    .watrScreenHorizontalPadding()
-                } else if let plan = plan {
+                } else if let plan {
                     VStack(spacing: 32) {
                         Text("Your daily goal")
                             .watrSectionLabel()
@@ -72,33 +58,57 @@ struct OnboardingCompleteView: View {
                             .font(.system(size: 16, weight: .light))
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.secondary)
+
+                        if weatherError != nil {
+                            Button {
+                                Task { await calculatePlan() }
+                            } label: {
+                                Text("Weather unavailable — tap to retry")
+                                    .font(.system(size: 13, weight: .light))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
                 
                 Spacer()
                 
-                if !isCalculating && plan != nil {
-                    NavigationLink {
-                        OnboardingTrialView()
-                            .environmentObject(profile)
+                if !isCalculating, plan != nil {
+                    Button {
+                        saveAndContinue()
+                        Task {
+                            await subscriptionService.refreshSubscriptionStatus()
+                            if subscriptionService.isSubscribed {
+                                hasCompletedOnboarding = true
+                            } else {
+                                showTrial = true
+                            }
+                        }
                     } label: {
                         Text("Continue")
                             .watrPrimaryButton()
                     }
-                    .simultaneousGesture(TapGesture().onEnded {
-                        saveAndContinue()
-                    })
                     .watrScreenHorizontalPadding()
                     .padding(.bottom, 48)
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $showTrial) {
+            OnboardingTrialView()
+                .environmentObject(profile)
+        }
         .task {
             await calculatePlan()
         }
     }
     
+    private static let fallbackWeather = WeatherData(
+        temperatureF: 72,
+        humidityPercent: 50,
+        condition: "Clear"
+    )
+
     func calculatePlan() async {
         let userProfile = profile.toUserProfile()
         await MainActor.run {
@@ -106,34 +116,28 @@ struct OnboardingCompleteView: View {
             self.weatherError = nil
         }
 
+        let weatherData: WeatherData
+        var fetchError: String? = nil
+
         do {
-            let weatherData = try await weatherService.fetchCurrentConditions(
-                for: userProfile.zipCode
-            )
-            
-            let today = Calendar.current.component(.weekday, from: Date())
-            let isWorkoutDay = userProfile.workoutDays.contains(
-                UserProfile.Weekday(rawValue: today) ?? .monday
-            )
-            
-            let calculatedPlan = engine.calculate(
-                profile: userProfile,
-                weather: weatherData,
-                isWorkoutDay: isWorkoutDay
-            )
-            
-            await MainActor.run {
-                self.weather = weatherData
-                self.plan = calculatedPlan
-                self.isCalculating = false
-            }
+            weatherData = try await weatherService.fetchCurrentConditions(for: userProfile.zipCode)
         } catch {
-            await MainActor.run {
-                self.weather = nil
-                self.plan = nil
-                self.weatherError = error.localizedDescription
-                self.isCalculating = false
-            }
+            weatherData = Self.fallbackWeather
+            fetchError = error.localizedDescription
+        }
+
+        let referenceDate = Date()
+        let plans = engine.plansForUpcomingDays(
+            profile: userProfile,
+            weather: weatherData,
+            referenceDate: referenceDate
+        )
+
+        await MainActor.run {
+            self.weather = fetchError == nil ? weatherData : nil
+            self.weatherError = fetchError
+            self.plan = plans.today
+            self.isCalculating = false
         }
     }
     
@@ -141,10 +145,15 @@ struct OnboardingCompleteView: View {
         let userProfile = profile.toUserProfile()
         ProfileService.shared.save(profile: userProfile)
         
-        if let plan = plan {
-            NotificationService.shared.scheduleDay(plan: plan)
+        if let plan = plan, let weather {
+            let plans = engine.plansForUpcomingDays(profile: userProfile, weather: weather)
+            NotificationService.shared.scheduleUpcoming(
+                profile: userProfile,
+                todayPlan: plans.today,
+                tomorrowPlan: plans.tomorrow
+            )
+        } else if let plan {
+            NotificationService.shared.scheduleDay(plan: plan, profile: userProfile)
         }
-        
-        hasCompletedOnboarding = true
     }
 }

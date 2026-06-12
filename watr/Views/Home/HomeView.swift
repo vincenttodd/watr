@@ -10,16 +10,33 @@ import Combine
 
 struct HomeView: View {
     
-    @EnvironmentObject var subscriptionService: SubscriptionService
-    @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false
-    
+    @StateObject private var streakService = StreakService.shared
+    @Environment(\.scenePhase) private var scenePhase
     @State private var plan: HydrationPlan? = nil
     @State private var weather: WeatherData? = nil
     @State private var weatherError: String? = nil
-    
+    @State private var lastWeatherFetch: Date? = nil
+
+    private let weatherFetchInterval: TimeInterval = 10 * 60 // 10 minutes
+
     let engine = HydrationEngine()
     let weatherService = WeatherService()
     
+    @ViewBuilder
+    var gearButton: some View {
+        let icon = Image(systemName: "gearshape")
+            .font(.system(size: 18, weight: .medium))
+            .foregroundStyle(.primary)
+            .frame(width: 36, height: 36)
+        if #available(iOS 26.0, *) {
+            icon.glassEffect(.regular.interactive(), in: Circle())
+        } else {
+            icon
+                .background(Color.watrPrimarySoft)
+                .clipShape(Circle())
+        }
+    }
+
     var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
@@ -34,26 +51,37 @@ struct HomeView: View {
             Color.watrScreenBackground
                 .ignoresSafeArea()
             
-            if let plan = plan {
+            if let plan {
                 VStack(spacing: 0) {
                         // Header
                         HStack {
-                            Text("watr")
-                                .font(.system(size: 28, weight: .light))
-                                .tracking(4)
+                            Image("WATR")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 28)
                             Spacer()
-                            NavigationLink {
-                                SettingsView()
-                            } label: {
-                                Image(systemName: "gearshape")
-                                    .font(.system(size: 20))
-                                    .foregroundStyle(.primary)
+                            if #available(iOS 26.0, *) {
+                                GlassEffectContainer {
+                                    NavigationLink {
+                                        SettingsView()
+                                    } label: {
+                                        gearButton
+                                    }
+                                }
+                            } else {
+                                NavigationLink {
+                                    SettingsView()
+                                } label: {
+                                    gearButton
+                                }
                             }
                         }
                         .watrScreenHorizontalPadding()
                         .padding(.top, 52)
                         .padding(.bottom, 28)
                         
+                    ScrollView{
+
                         // Hero
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Today")
@@ -68,17 +96,25 @@ struct HomeView: View {
                                     .padding(.bottom, 10)
                             }
                             
-                            if let weather = weather {
+                            if let weather {
                                 Text("\(weather.condition) · \(Int(weather.temperatureF))°F")
                                     .font(.system(size: 14, weight: .light))
                                     .foregroundStyle(.secondary)
+                            } else if weatherError != nil {
+                                Button {
+                                    Task { await loadPlan(forceWeatherRefresh: true) }
+                                } label: {
+                                    Text("Weather unavailable — tap to retry")
+                                        .font(.system(size: 14, weight: .light))
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .watrScreenHorizontalPadding()
                         .padding(.bottom, 24)
-                        
-                    ScrollView{
+
+
                         // Next window card
                         if let nextWindow = plan.nextWindow {
                             VStack(alignment: .leading, spacing: 8) {
@@ -126,21 +162,21 @@ struct HomeView: View {
                                 Circle()
                                     .frame(width: 8, height: 8)
                                     .foregroundStyle(
-                                        isNextWindow(window, plan: plan) ?
+                                        isCurrentWindow(window, plan: plan) ?
                                         Color.watrPrimary :
                                         Color.gray.opacity(0.3)
                                     )
                                 
-                                VStack(alignment: .leading, spacing: 2) {
+                                VStack(alignment: .leading, spacing: 4) {
                                     Text(window.name)
-                                        .font(.system(size: 15, weight: .medium))
+                                        .font(.system(size: 18, weight: .medium))
                                         .foregroundStyle(
-                                            isNextWindow(window, plan: plan) ?
+                                            isCurrentWindow(window, plan: plan) ?
                                             Color.watrPrimary :
                                             .primary
                                         )
                                     Text(windowTimeString(window))
-                                        .font(.system(size: 12))
+                                        .font(.system(size: 14))
                                         .foregroundStyle(.secondary)
                                 }
                                 
@@ -148,11 +184,11 @@ struct HomeView: View {
                                 
                                 HStack(alignment: .bottom, spacing: 2) {
                                     Text("\(Int(window.minOz))–\(Int(window.maxOz))")
-                                        .font(.system(size: 20, weight: .light))
+                                        .font(.system(size: 24, weight: .light))
                                     Text("oz")
-                                        .font(.system(size: 11))
+                                        .font(.system(size: 13))
                                         .foregroundStyle(.secondary)
-                                        .padding(.bottom, 3)
+                                        .padding(.bottom, 4)
                                 }
                             }
                             .padding(.vertical, 14)
@@ -161,35 +197,14 @@ struct HomeView: View {
                                 .padding(.leading, 28)
                         }
                         }
+
+                        StreakFooterView(
+                            streak: streakService.currentStreak,
+                            message: streakService.message
+                        )
                     }
                     .scrollIndicators(.hidden)
-                        
-                        NavigationLink {
-                            CustomizeView()
-                        } label: {
-                            Text("Customize schedule")
-                                .font(.system(size: 15))
-                                .foregroundStyle(Color.watrPrimary)
-                                .padding(.top, 24)
-                        }
-                        
-                        Spacer().frame(height: 48)
-                    }
-            } else if let weatherError = weatherError {
-                VStack(spacing: 12) {
-                    Text("Weather unavailable")
-                        .font(.system(size: 20, weight: .medium))
-                    Text(weatherError)
-                        .font(.system(size: 14))
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                    Button("Retry weather") {
-                        Task { await loadPlan() }
-                    }
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(Color.watrPrimary)
                 }
-                .watrScreenHorizontalPadding()
             } else {
                 ProgressView()
                     .tint(Color.watrPrimary)
@@ -197,50 +212,64 @@ struct HomeView: View {
         }
         .navigationBarHidden(true)
         .task {
+            streakService.recordDailyVisit()
             await loadPlan()
         }
-        .fullScreenCover(isPresented: Binding(
-            get: { !subscriptionService.isSubscribed },
-            set: { _ in }
-        )) {
-            Color.clear.onAppear {
-                SubscriptionService.shared.showPaywall(from: "onboarding_complete")
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await loadPlan() }
             }
         }
     }
     
-    func loadPlan() async {
+    private static let fallbackWeather = WeatherData(
+        temperatureF: 72,
+        humidityPercent: 50,
+        condition: "Clear"
+    )
+
+    func loadPlan(forceWeatherRefresh: Bool = false) async {
         guard let profile = ProfileService.shared.load() else { return }
-        await MainActor.run {
-            self.weatherError = nil
+
+        let now = Date()
+        let shouldFetchWeather = forceWeatherRefresh
+            || lastWeatherFetch == nil
+            || now.timeIntervalSince(lastWeatherFetch!) >= weatherFetchInterval
+
+        await MainActor.run { self.weatherError = nil }
+
+        let weatherData: WeatherData
+        var fetchError: String? = nil
+
+        if shouldFetchWeather {
+            do {
+                weatherData = try await weatherService.fetchCurrentConditions(for: profile.zipCode)
+                await MainActor.run { self.lastWeatherFetch = now }
+            } catch {
+                weatherData = weather ?? Self.fallbackWeather
+                fetchError = error.localizedDescription
+            }
+        } else {
+            weatherData = weather ?? Self.fallbackWeather
         }
 
-        do {
-            let weatherData = try await weatherService.fetchCurrentConditions(
-                for: profile.zipCode
-            )
-            
-            let today = Calendar.current.component(.weekday, from: Date())
-            let isWorkoutDay = profile.workoutDays.contains(
-                UserProfile.Weekday(rawValue: today) ?? .monday
-            )
-            
-            let calculatedPlan = engine.calculate(
+        let referenceDate = Date()
+        let plans = engine.plansForUpcomingDays(
+            profile: profile,
+            weather: weatherData,
+            referenceDate: referenceDate
+        )
+
+        await MainActor.run {
+            self.weather = fetchError == nil ? weatherData : nil
+            self.weatherError = fetchError
+            self.plan = plans.today
+            NotificationService.shared.scheduleUpcoming(
                 profile: profile,
-                weather: weatherData,
-                isWorkoutDay: isWorkoutDay
+                todayPlan: plans.today,
+                tomorrowPlan: plans.tomorrow,
+                referenceDate: referenceDate
             )
-            
-            await MainActor.run {
-                self.weather = weatherData
-                self.plan = calculatedPlan
-            }
-        } catch {
-            await MainActor.run {
-                self.plan = nil
-                self.weather = nil
-                self.weatherError = error.localizedDescription
-            }
         }
     }
     
@@ -260,7 +289,7 @@ struct HomeView: View {
         return "\(formatTime(hour: startHour, minute: startMinute)) – \(formatTime(hour: endHour, minute: endMinute))"
     }
     
-    func isNextWindow(_ window: HydrationWindow, plan: HydrationPlan) -> Bool {
-        return plan.nextWindow?.id == window.id
+    func isCurrentWindow(_ window: HydrationWindow, plan: HydrationPlan) -> Bool {
+        plan.currentWindow?.id == window.id
     }
 }

@@ -20,15 +20,32 @@ struct HydrationPlan: Codable {
         let now = Date()
         let calendar = Calendar.current
         return windows.first { window in
-            guard let hour = window.startTime.hour,
-                  let minute = window.startTime.minute else { return false }
-            let windowTime = calendar.date(
-                bySettingHour: hour,
-                minute: minute,
-                second: 0,
-                of: now
-            )
-            return windowTime ?? now > now
+            guard let windowTime = time(on: now, from: window.startTime, calendar: calendar) else {
+                return false
+            }
+            return windowTime > now
         }
+    }
+
+    var currentWindow: HydrationWindow? {
+        let now = Date()
+        let calendar = Calendar.current
+        return windows.first { window in
+            guard
+                let start = time(on: now, from: window.startTime, calendar: calendar),
+                let end = time(on: now, from: window.endTime, calendar: calendar)
+            else { return false }
+            return now >= start && now < end
+        }
+    }
+
+    private func time(on referenceDate: Date, from components: DateComponents, calendar: Calendar) -> Date? {
+        guard let hour = components.hour, let minute = components.minute else { return nil }
+        return calendar.date(
+            bySettingHour: hour,
+            minute: minute,
+            second: 0,
+            of: referenceDate
+        )
     }
 }

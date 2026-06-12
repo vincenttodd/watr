@@ -27,33 +27,68 @@ extension View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 
+    @ViewBuilder
     func watrIconBadge() -> some View {
-        self
+        let base = self
             .font(.unica(15))
             .foregroundStyle(Color.watrPrimary)
             .frame(width: 32, height: 32)
-            .background(Color.watrPrimarySoft)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+        if #available(iOS 26.0, *) {
+            base.glassEffect(in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        } else {
+            base
+                .background(Color.watrPrimarySoft)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
     }
 
+    @ViewBuilder
     func watrPrimaryButton(enabled: Bool = true) -> some View {
-        self
+        let shape = RoundedRectangle(cornerRadius: 40, style: .continuous)
+        let base = self
             .font(.unica(17))
-            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
-            .background(enabled ? Color(red: 0.082, green: 0.082, blue: 0.082) : Color.gray.opacity(0.4))
-            .clipShape(RoundedRectangle(cornerRadius: 40))
+        if #available(iOS 26.0, *) {
+            base
+                .foregroundStyle(enabled ? Color.primary : Color.secondary)
+                .glassEffect(
+                    enabled
+                        ? .regular.interactive().tint(.black.opacity(0.08))
+                        : .regular.tint(.gray.opacity(0.25)),
+                    in: shape
+                )
+        } else {
+            base
+                .foregroundStyle(.white)
+                .background(enabled ? Color(red: 0.082, green: 0.082, blue: 0.082) : Color.gray.opacity(0.4))
+                .clipShape(shape)
+        }
     }
 
-    func watrSelectionButton() -> some View {
-        self
+    @ViewBuilder
+    func watrGlassButton() -> some View {
+        self.watrPrimaryButton()
+    }
+
+    @ViewBuilder
+    func watrSelectionButton(selected: Bool = false) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
+        let base = self
             .font(.unica(17))
             .foregroundStyle(.primary)
             .frame(maxWidth: .infinity)
             .frame(height: 69)
-            .background(Color.watrNeutralButtonBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+        if #available(iOS 26.0, *) {
+            base.glassEffect(
+                selected ? .regular.interactive().tint(.blue.opacity(0.15)) : .regular.interactive(),
+                in: shape
+            )
+        } else {
+            base
+                .background(selected ? Color.watrSecondaryButtonBackground : Color.watrNeutralButtonBackground)
+                .clipShape(shape)
+        }
     }
 
     func watrSecondaryButtonBackground(

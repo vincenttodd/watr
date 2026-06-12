@@ -45,7 +45,7 @@ struct OnboardingNotificationPushView: View {
                     }
                     
                     NavigationLink {
-                        OnboardingCompleteView()
+                        OnboardingReminderHowItWorksView()
                             .environmentObject(profile)
                     } label: {
                         Text("Skip for now")

@@ -25,7 +25,7 @@ struct OnboardingNotificationView: View {
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                     
-                    Text("We only send daily notifications based on your preferences. You can pause notifications at any time.")
+                    Text("We send one reminder at a time. Long-press and tap Got it to get the next one — no need to open the app.")
                         .font(.system(size: 16, weight: .regular))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -36,7 +36,7 @@ struct OnboardingNotificationView: View {
                 
                 VStack(spacing: 16) {
                     NavigationLink {
-                        OnboardingCompleteView()
+                        OnboardingReminderHowItWorksView()
                             .environmentObject(profile)
                     } label: {
                         Text("Allow")

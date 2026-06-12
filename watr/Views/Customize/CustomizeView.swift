@@ -43,7 +43,7 @@ struct CustomizeView: View {
                                     value: timeRangeString(
                                         wakeHour: profile.weekendWake.hour ?? 8,
                                         wakeMinute: profile.weekendWake.minute ?? 0,
-                                        sleepHour: profile.weekendSleep.hour ?? 0,
+                                        sleepHour: profile.weekendSleep.hour ?? 23,
                                         sleepMinute: profile.weekendSleep.minute ?? 0
                                     )
                                 )

@@ -14,7 +14,11 @@ class WeatherService {
     private let geocoder = CLGeocoder()
     
     func fetchCurrentConditions(for zipCode: String) async throws -> WeatherData {
-        let location = try await geocode(zipCode: zipCode)
+        let trimmed = zipCode.trimmingCharacters(in: .whitespaces)
+        guard trimmed.count == 5, trimmed.allSatisfy(\.isNumber) else {
+            throw WeatherError.invalidZipCode
+        }
+        let location = try await geocode(zipCode: trimmed)
 
         do {
             let weather = try await weatherKitService.weather(for: location)
@@ -51,6 +55,7 @@ class WeatherService {
     }
     
     enum WeatherError: Error {
+        case invalidZipCode
         case locationNotFound
         case geocodingFailed(String)
         case weatherKitFailed(String)
@@ -60,6 +65,8 @@ class WeatherService {
 extension WeatherService.WeatherError: LocalizedError {
     var errorDescription: String? {
         switch self {
+        case .invalidZipCode:
+            return "Please enter a valid 5-digit ZIP code."
         case .locationNotFound:
             return "Could not find location for this ZIP code."
         case .geocodingFailed(let reason):

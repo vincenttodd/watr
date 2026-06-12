@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct SettingsView: View {
     
+    @EnvironmentObject private var subscriptionService: SubscriptionService
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false
-    @State private var notificationsEnabled = true
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
+    @State private var showManageSubscriptions = false
     
     var body: some View {
         ZStack {
@@ -19,6 +22,21 @@ struct SettingsView: View {
             
             ScrollView {
                 VStack(spacing: 28) {
+                    // Schedule section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Schedule")
+                            .watrSectionLabel()
+                        
+                        VStack(spacing: 0) {
+                            NavigationLink {
+                                CustomizeView()
+                            } label: {
+                                settingRow(icon: "calendar", label: "Customize schedule")
+                            }
+                        }
+                        .watrCardSurface()
+                    }
+                    
                     // Notifications section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Notifications")
@@ -67,7 +85,21 @@ struct SettingsView: View {
                             .watrSectionLabel()
                         
                         VStack(spacing: 0) {
-                            settingRow(icon: "crown.fill", label: "Manage subscription")
+                            NavigationLink {
+                                NativeSubscriptionStoreView(productIDs: SubscriptionService.membershipProductIDs)
+                            } label: {
+                                settingRow(icon: "creditcard.fill", label: "View plans")
+                            }
+
+                            Divider().padding(.leading, 56)
+
+                            Button {
+                                showManageSubscriptions = true
+                            } label: {
+                                settingRow(icon: "crown.fill", label: "Manage subscription")
+                            }
+                            .buttonStyle(.plain)
+
                             Divider().padding(.leading, 56)
                             settingRow(icon: "gift.fill", label: "Refer a friend — get 1 month free")
                         }
@@ -83,19 +115,47 @@ struct SettingsView: View {
                             settingRow(icon: "ant.fill", label: "Report a bug")
                             Divider().padding(.leading, 56)
                             settingRow(icon: "bubble.left.fill", label: "Send feedback")
+                            Divider().padding(.leading, 56)
+                            Link(destination: URL(string: "https://watrapp.com/privacy")!) {
+                                settingRow(icon: "hand.raised.fill", label: "Privacy Policy")
+                            }
+                            .foregroundStyle(.primary)
+                            Divider().padding(.leading, 56)
+                            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                                settingRow(icon: "doc.text.fill", label: "Terms of Use")
+                            }
+                            .foregroundStyle(.primary)
                         }
                         .watrCardSurface()
                     }
                     
-                    // Reset (for testing)
+                    #if DEBUG
+                    Button {
+                        SubscriptionService.shared.bypassPaywall()
+                    } label: {
+                        Text("Bypass subscription")
+                            .font(.system(size: 15))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button {
+                        hasCompletedOnboarding = false
+                    } label: {
+                        Text("Re-show onboarding")
+                            .font(.system(size: 15))
+                            .foregroundStyle(.blue.opacity(0.7))
+                    }
+
                     Button {
                         ProfileService.shared.clear()
+                        SubscriptionService.shared.clearBypass()
                         hasCompletedOnboarding = false
                     } label: {
                         Text("Reset onboarding")
                             .font(.system(size: 15))
                             .foregroundStyle(.red.opacity(0.7))
                     }
+                    #endif
                     
                     Text("Made with ♥ in Chicago")
                         .font(.system(size: 13))
@@ -108,6 +168,16 @@ struct SettingsView: View {
         }
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
+        .manageSubscriptionsSheet(isPresented: $showManageSubscriptions)
+        .onChange(of: notificationsEnabled) { _, enabled in
+            if enabled {
+                if let profile = ProfileService.shared.load() {
+                    NotificationService.shared.rescheduleIfNeeded(profile: profile)
+                }
+            } else {
+                NotificationService.shared.cancelAll()
+            }
+        }
     }
     
     @ViewBuilder

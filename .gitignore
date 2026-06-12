@@ -1,0 +1,61 @@
+# Xcode
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Build artifacts
+build/
+*.o
+*.a
+*.swp
+*.lock
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+.swiftpm/
+
+# CocoaPods
+Pods/
+*.xcworkspace
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Environment / secrets
+.env
+.env.*
+*.pem
+*.p8
+*.p12
+Secrets.swift
+Config.xcconfig
+GoogleService-Info.plist
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+*.DS_Store
+
+# TestFlight / App Store metadata
+AuthKey_*.p8
+
+# IDE
+.idea/
+*.swp
+*~

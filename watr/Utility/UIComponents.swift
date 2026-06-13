@@ -91,6 +91,13 @@ extension View {
         }
     }
 
+    func watrLinkButton() -> some View {
+        self
+            .font(.unica(15))
+            .foregroundStyle(.primary)
+            .tint(.primary)
+    }
+
     func watrSecondaryButtonBackground(
         selected: Bool = false,
         cornerRadius: CGFloat = 14

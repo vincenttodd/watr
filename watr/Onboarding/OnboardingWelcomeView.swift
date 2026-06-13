@@ -21,13 +21,6 @@ struct OnboardingWelcomeView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     
-                    Image("WATRLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 160)
-                    
-                    Spacer()
-                    
                     VStack(spacing: 12) {
                         NavigationLink {
                             OnboardingSexView()
@@ -40,7 +33,7 @@ struct OnboardingWelcomeView: View {
                         Button("Already have an account? Login") {
                             // login flow later
                         }
-                        .font(.system(size: 15))
+                        .font(.unica(15))
                         .foregroundStyle(.secondary)
                     }
                     .watrScreenHorizontalPadding()

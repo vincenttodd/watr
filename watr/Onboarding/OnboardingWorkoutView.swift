@@ -46,8 +46,11 @@ struct OnboardingWorkoutView: View {
                         profile.workoutDays = [.monday, .thursday]
                         navigate = true
                     } label: {
-                        Text("0–2 times per week")
-                            .watrSelectionButton()
+                        WorkoutOptionLabel(
+                            icon: "square.fill",
+                            range: "0–2",
+                            description: "Workout now and then"
+                        )
                     }
                     
                     Button {
@@ -55,8 +58,11 @@ struct OnboardingWorkoutView: View {
                         profile.workoutDays = [.monday, .tuesday, .wednesday, .thursday, .friday]
                         navigate = true
                     } label: {
-                        Text("3–5 times per week")
-                            .watrSelectionButton()
+                        WorkoutOptionLabel(
+                            icon: "square.grid.2x2.fill",
+                            range: "3–5",
+                            description: "A few workouts per week"
+                        )
                     }
                     
                     Button {
@@ -64,10 +70,14 @@ struct OnboardingWorkoutView: View {
                         profile.workoutDays = [.sunday, .monday, .tuesday, .wednesday, .thursday, .friday]
                         navigate = true
                     } label: {
-                        Text("6+ times per week")
-                            .watrSelectionButton()
+                        WorkoutOptionLabel(
+                            icon: "square.grid.3x2.fill",
+                            range: "6+",
+                            description: "Dedicated athlete"
+                        )
                     }
                 }
+                .tint(.primary)
                 .watrScreenHorizontalPadding()
                 
                 Spacer()
@@ -78,5 +88,36 @@ struct OnboardingWorkoutView: View {
             OnboardingBirthDateView()
                 .environmentObject(profile)
         }
+    }
+}
+
+private struct WorkoutOptionLabel: View {
+    let icon: String
+    let range: String
+    let description: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.primary)
+                .frame(width: 32, alignment: .center)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(range)
+                    .font(.unica(17))
+                    .foregroundStyle(.primary)
+                Text(description)
+                    .font(.unica(14))
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .frame(height: 69)
+        .background(Color.watrNeutralButtonBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }

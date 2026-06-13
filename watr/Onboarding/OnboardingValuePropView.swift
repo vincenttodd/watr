@@ -18,7 +18,7 @@ struct OnboardingValuePropView: View {
             
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("WATR determines ideal water intake based on you and your environment so you stay hydrated")
+                    Text("Watr determines ideal water intake based on your body, activity and enviroment so you stay hydrated")
                         .watrScreenTitle()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

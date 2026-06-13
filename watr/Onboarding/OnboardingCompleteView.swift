@@ -31,31 +31,30 @@ struct OnboardingCompleteView: View {
                 Spacer()
                 
                 if isCalculating {
-                    VStack(spacing: 20) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(Color.watrPrimary)
+                    VStack(spacing: 24) {
+                        WatrLoadingView()
                         
                         Text("Setting everything\nup for you")
-                            .font(.system(size: 28, weight: .light))
+                            .font(.unica(28))
                             .multilineTextAlignment(.center)
                     }
                 } else if let plan {
                     VStack(spacing: 32) {
-                        Text("Your daily goal")
-                            .watrSectionLabel()
+                        Text("Your goal today")
+                            .watrScreenTitle()
+                            .multilineTextAlignment(.center)
                         
                         HStack(alignment: .bottom, spacing: 4) {
                             Text("\(Int(plan.totalOz))")
-                                .font(.system(size: 80, weight: .light))
+                                .font(.unica(80))
                             Text("oz")
-                                .font(.system(size: 24, weight: .light))
+                                .font(.unica(24))
                                 .padding(.bottom, 16)
                                 .foregroundStyle(.secondary)
                         }
                         
-                        Text("Based on your body, schedule,\nand current weather.")
-                            .font(.system(size: 16, weight: .light))
+                        Text("Based on your body, activity,\nand current weather.")
+                            .font(.unica(16))
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.secondary)
 
@@ -64,7 +63,7 @@ struct OnboardingCompleteView: View {
                                 Task { await calculatePlan() }
                             } label: {
                                 Text("Weather unavailable — tap to retry")
-                                    .font(.system(size: 13, weight: .light))
+                                    .font(.unica(13))
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -120,8 +119,14 @@ struct OnboardingCompleteView: View {
         var fetchError: String? = nil
 
         do {
-            weatherData = try await weatherService.fetchCurrentConditions(for: userProfile.zipCode)
+            // Run weather fetch and minimum 1.8s loading animation in parallel
+            async let weatherFetch = weatherService.fetchCurrentConditions(for: userProfile.zipCode)
+            async let minimumDelay: Void = Task.sleep(nanoseconds: 1_800_000_000)
+            let (fetched, _) = try await (weatherFetch, minimumDelay)
+            weatherData = fetched
         } catch {
+            // Ensure minimum delay even on failure so loading animation completes
+            try? await Task.sleep(nanoseconds: 1_800_000_000)
             weatherData = Self.fallbackWeather
             fetchError = error.localizedDescription
         }
@@ -155,5 +160,19 @@ struct OnboardingCompleteView: View {
         } else if let plan {
             NotificationService.shared.scheduleDay(plan: plan, profile: userProfile)
         }
+    }
+}
+
+struct WatrLoadingView: View {
+    @State private var isAnimating = false
+
+    var body: some View {
+        Circle()
+            .trim(from: 0, to: 0.7)
+            .stroke(Color.primary, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+            .frame(width: 28, height: 28)
+            .rotationEffect(.degrees(isAnimating ? 360 : 0))
+            .animation(.linear(duration: 0.8).repeatForever(autoreverses: false), value: isAnimating)
+            .onAppear { isAnimating = true }
     }
 }

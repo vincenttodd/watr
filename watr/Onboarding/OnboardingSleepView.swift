@@ -71,6 +71,7 @@ struct OnboardingSleepView: View {
                     .padding(.bottom, 24)
                 }
 
+
                 NavigationLink {
                     OnboardingBodyView()
                         .environmentObject(profile)
@@ -150,6 +151,7 @@ struct OnboardingSleepView: View {
             .labelsHidden()
             .datePickerStyle(.wheel)
             .frame(maxWidth: .infinity)
+            .frame(height: 150)
             .clipped()
         }
     }

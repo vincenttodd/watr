@@ -11,6 +11,9 @@ struct OnboardingNotificationView: View {
     
     @EnvironmentObject var profile: OnboardingState
     
+    @State private var isRequestingPermission = false
+    @State private var navigateToHowItWorks = false
+    
     var body: some View {
         ZStack {
             Color.watrScreenBackground
@@ -34,18 +37,21 @@ struct OnboardingNotificationView: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
-                    NavigationLink {
-                        OnboardingReminderHowItWorksView()
-                            .environmentObject(profile)
+                    Button {
+                        guard !isRequestingPermission else { return }
+                        isRequestingPermission = true
+                        Task {
+                            await NotificationService.shared.requestPermission()
+                            await MainActor.run {
+                                isRequestingPermission = false
+                                navigateToHowItWorks = true
+                            }
+                        }
                     } label: {
                         Text("Allow")
                             .watrPrimaryButton()
                     }
-                    .simultaneousGesture(TapGesture().onEnded {
-                        Task {
-                            await NotificationService.shared.requestPermission()
-                        }
-                    })
+                    .disabled(isRequestingPermission)
                     
                     NavigationLink {
                         OnboardingNotificationPushView()
@@ -58,6 +64,14 @@ struct OnboardingNotificationView: View {
                 .watrScreenHorizontalPadding()
                 .padding(.bottom, 48)
             }
+            
+            NavigationLink(
+                destination: OnboardingReminderHowItWorksView()
+                    .environmentObject(profile),
+                isActive: $navigateToHowItWorks,
+                label: { EmptyView() }
+            )
+            .hidden()
         }
         .navigationBarTitleDisplayMode(.inline)
     }

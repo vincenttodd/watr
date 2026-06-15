@@ -17,6 +17,7 @@ struct UserProfile: Codable {
     var weekendWake: DateComponents
     var weekendSleep: DateComponents
     var workoutDays: [Weekday]
+    var workoutTimes: [Weekday: DateComponents]  // NEW
     var workoutIntensity: WorkoutIntensity
     var zipCode: String
 
@@ -31,7 +32,31 @@ struct UserProfile: Codable {
         case heavy
     }
 
-    enum Weekday: Int, Codable, CaseIterable {
+    enum Weekday: Int, Codable, CaseIterable, Hashable {  // add Hashable
         case sunday=1, monday, tuesday, wednesday, thursday, friday, saturday
+
+        var displayName: String {
+            switch self {
+            case .sunday: return "Sunday"
+            case .monday: return "Monday"
+            case .tuesday: return "Tuesday"
+            case .wednesday: return "Wednesday"
+            case .thursday: return "Thursday"
+            case .friday: return "Friday"
+            case .saturday: return "Saturday"
+            }
+        }
+
+        var shortName: String {
+            switch self {
+            case .sunday: return "Sun"
+            case .monday: return "Mon"
+            case .tuesday: return "Tue"
+            case .wednesday: return "Wed"
+            case .thursday: return "Thu"
+            case .friday: return "Fri"
+            case .saturday: return "Sat"
+            }
+        }
     }
 }

@@ -24,14 +24,14 @@ struct OnboardingTrialView: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
-                    Text("Try watr free\nfor 3 days")
+                    Text("We'll send you a reminder before your trial ends")
                         .font(.system(size: 34, weight: .regular))
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                     
-                    Text("Cancel anytime before your trial ends and you won't be charged.")
+                    Text("No payment is due now.")
                         .font(.system(size: 16, weight: .regular))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.watrPrimary)
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                 }

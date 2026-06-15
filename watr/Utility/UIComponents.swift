@@ -2,12 +2,12 @@ import SwiftUI
 
 extension Color {
     static let watrScreenBackground = Color.white
-    static let watrPrimary = Color(red: 0.18, green: 0.35, blue: 0.24)
+    static let watrPrimary = Color(red: 0.082, green: 0.082, blue: 0.082) // #151515
     static let watrPrimaryDisabled = Color.gray.opacity(0.4)
     static let watrSurface = Color.white
-    static let watrSecondaryButtonBackground = Color.watrPrimary.opacity(0.08)
+    static let watrSecondaryButtonBackground = Color(red: 0.008, green: 0.176, blue: 0.263).opacity(0.07) // #022D43 7%
     static let watrPrimarySoft = Color.watrPrimary.opacity(0.1)
-    static let watrNeutralButtonBackground = Color(red: 0.922, green: 0.929, blue: 0.941)
+    static let watrNeutralButtonBackground = Color(red: 0.925, green: 0.933, blue: 0.941) // #ECEFF1
 }
 
 extension Font {
@@ -51,10 +51,10 @@ extension View {
             .frame(height: 56)
         if #available(iOS 26.0, *) {
             base
-                .foregroundStyle(enabled ? Color.primary : Color.secondary)
+                .foregroundStyle(enabled ? Color.white : Color.secondary)
                 .glassEffect(
                     enabled
-                        ? .regular.interactive().tint(.black.opacity(0.08))
+                        ? .regular.interactive().tint(Color(red: 0.082, green: 0.082, blue: 0.082))
                         : .regular.tint(.gray.opacity(0.25)),
                     in: shape
                 )
@@ -71,31 +71,22 @@ extension View {
         self.watrPrimaryButton()
     }
 
-    @ViewBuilder
     func watrSelectionButton(selected: Bool = false) -> some View {
         let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
-        let base = self
+        return self
             .font(.unica(17))
-            .foregroundStyle(.primary)
+            .foregroundStyle(Color.watrPrimary)
             .frame(maxWidth: .infinity)
             .frame(height: 69)
-        if #available(iOS 26.0, *) {
-            base.glassEffect(
-                selected ? .regular.interactive().tint(.blue.opacity(0.15)) : .regular.interactive(),
-                in: shape
-            )
-        } else {
-            base
-                .background(selected ? Color.watrSecondaryButtonBackground : Color.watrNeutralButtonBackground)
-                .clipShape(shape)
-        }
+            .background(selected ? Color.watrSecondaryButtonBackground : Color.watrNeutralButtonBackground)
+            .clipShape(shape)
     }
 
     func watrLinkButton() -> some View {
         self
             .font(.unica(15))
-            .foregroundStyle(.primary)
-            .tint(.primary)
+            .foregroundStyle(Color.watrPrimary)
+            .tint(Color.watrPrimary)
     }
 
     func watrSecondaryButtonBackground(

@@ -36,10 +36,7 @@ struct OnboardingBodyView: View {
                 HStack(spacing: 0) {
                     VStack(spacing: 8) {
                         Text("Height")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(1)
+                            .watrScreenSubtitle()
                         
                         Picker("Height", selection: $profile.heightInches) {
                             ForEach(heights, id: \.self) { h in
@@ -54,10 +51,7 @@ struct OnboardingBodyView: View {
                     
                     VStack(spacing: 8) {
                         Text("Weight (lb)")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(1)
+                            .watrScreenSubtitle()
                         
                         Picker("Weight", selection: $profile.weightLbs) {
                             ForEach(weights, id: \.self) { w in

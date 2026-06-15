@@ -21,7 +21,7 @@ struct OnboardingReminderHowItWorksView: View {
                             Text("How reminders work")
                                 .watrScreenTitle()
 
-                            Text("One at a time — tap the notification when you drink to get the next one.")
+                            Text("One at a time — tap it when you drink, and we'll send the next.")
                                 .watrScreenSubtitle()
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -31,26 +31,20 @@ struct OnboardingReminderHowItWorksView: View {
                         VStack(spacing: 0) {
                             howItWorksRow(
                                 number: "1",
-                                title: "You get one reminder",
-                                detail: "We send a single nudge for your current hydration window."
+                                title: "Get a reminder",
+                                detail: "One nudge for your current window."
                             )
                             Divider().padding(.leading, 56)
                             howItWorksRow(
                                 number: "2",
-                                title: "Tap the notification",
-                                detail: "Just tap it like any other alert — that counts. Or long-press to see a Got it button."
+                                title: "Tap it when you drink",
+                                detail: "That's it — no need to open the app."
                             )
                             Divider().padding(.leading, 56)
                             howItWorksRow(
                                 number: "3",
-                                title: "Next one schedules automatically",
-                                detail: "You don't need to open the app. Got it clears the alert and queues the next reminder."
-                            )
-                            Divider().padding(.leading, 56)
-                            howItWorksRow(
-                                number: "4",
-                                title: "Miss one? No pile-up",
-                                detail: "If you skip a window, we move on to where you are now — no stack of old alerts."
+                                title: "Next one comes automatically",
+                                detail: "No pile-up if you miss one."
                             )
                         }
                         .watrCardSurface()

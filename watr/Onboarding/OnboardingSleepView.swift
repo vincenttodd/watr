@@ -30,42 +30,12 @@ struct OnboardingSleepView: View {
                         .watrScreenHorizontalPadding()
                         .padding(.top, 48)
 
-                        scheduleSection(
-                            title: "Weekdays",
-                            subtitle: "Mon – Fri",
-                            wakeHour: $profile.weekdayWakeHour,
-                            wakeMinute: $profile.weekdayWakeMinute,
-                            sleepHour: $profile.weekdaySleepHour,
-                            sleepMinute: $profile.weekdaySleepMinute
-                        )
-
-                        VStack(spacing: 0) {
-                            Toggle(isOn: $profile.sameScheduleOnWeekends) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Same schedule on weekends")
-                                        .font(.system(size: 15))
-                                    Text("Sat – Sun use these weekday times")
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            .tint(Color.watrPrimary)
-                            .padding(.horizontal, 16)
-                            .frame(minHeight: 52)
+                        VStack(spacing: 12) {
+                            timePicker(label: "Wake", hour: $profile.weekdayWakeHour, minute: $profile.weekdayWakeMinute)
+                            timePicker(label: "Sleep", hour: $profile.weekdaySleepHour, minute: $profile.weekdaySleepMinute)
                         }
-                        .watrCardSurface()
+                        .frame(maxWidth: .infinity)
                         .watrScreenHorizontalPadding()
-
-                        if !profile.sameScheduleOnWeekends {
-                            scheduleSection(
-                                title: "Weekends",
-                                subtitle: "Sat – Sun",
-                                wakeHour: $profile.weekendWakeHour,
-                                wakeMinute: $profile.weekendWakeMinute,
-                                sleepHour: $profile.weekendSleepHour,
-                                sleepMinute: $profile.weekendSleepMinute
-                            )
-                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .top)
                     .padding(.bottom, 24)
@@ -96,39 +66,10 @@ struct OnboardingSleepView: View {
     }
 
     @ViewBuilder
-    private func scheduleSection(
-        title: String,
-        subtitle: String,
-        wakeHour: Binding<Int>,
-        wakeMinute: Binding<Int>,
-        sleepHour: Binding<Int>,
-        sleepMinute: Binding<Int>
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .watrSectionLabel()
-                Text(subtitle)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-            }
-            .watrScreenHorizontalPadding()
-
-            VStack(spacing: 12) {
-                timePicker(label: "Wake", hour: wakeHour, minute: wakeMinute)
-                timePicker(label: "Sleep", hour: sleepHour, minute: sleepMinute)
-            }
-            .frame(maxWidth: .infinity)
-            .watrScreenHorizontalPadding()
-        }
-    }
-
-    @ViewBuilder
     private func timePicker(label: String, hour: Binding<Int>, minute: Binding<Int>) -> some View {
         VStack(spacing: 4) {
             Text(label)
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
+                .watrScreenSubtitle()
             DatePicker(
                 "",
                 selection: Binding(

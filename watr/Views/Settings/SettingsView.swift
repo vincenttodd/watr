@@ -9,193 +9,245 @@ import SwiftUI
 import StoreKit
 
 struct SettingsView: View {
-    
+
+    @Environment(\.dismiss) var dismiss
     @EnvironmentObject private var subscriptionService: SubscriptionService
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
+    @AppStorage("pausedUntil") private var pausedUntilTimestamp: Double = 0
     @State private var showManageSubscriptions = false
-    
+
+    private var isPaused: Bool {
+        pausedUntilTimestamp > Date().timeIntervalSince1970
+    }
+
+    private var activePauseDays: Int? {
+        guard isPaused else { return nil }
+        let remaining = pausedUntilTimestamp - Date().timeIntervalSince1970
+        return Int(ceil(remaining / 86400))
+    }
+
     var body: some View {
         ZStack {
             Color.watrScreenBackground
                 .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 28) {
-                    // Schedule section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Schedule")
-                            .watrSectionLabel()
-                        
-                        VStack(spacing: 0) {
-                            NavigationLink {
-                                CustomizeView()
-                            } label: {
-                                settingRow(icon: "calendar", label: "Customize schedule")
-                            }
-                        }
-                        .watrCardSurface()
-                    }
-                    
-                    // Notifications section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Notifications")
-                            .watrSectionLabel()
-                        
-                        VStack(spacing: 0) {
-                            HStack {
-                                Text("Hydration reminders")
-                                    .font(.system(size: 15))
-                                Spacer()
-                                Toggle("", isOn: $notificationsEnabled)
-                                    .tint(Color.watrPrimary)
-                            }
-                            .padding(.horizontal, 16)
-                            .frame(height: 52)
-                            
-                            Divider().padding(.leading, 16)
-                            
-                            HStack {
-                                Text("Pause notifications")
-                                    .font(.system(size: 15))
+
+            VStack(spacing: 0) {
+                // Top bar
+                HStack {
+                    backButton
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Settings")
+                            .font(.unica(38))
+                            .padding(.bottom, 12)
+                            .padding(.horizontal, 20)
+
+                        divider
+
+                        // Pause Notifications row
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 12) {
+                                Text("Pause Notifications")
+                                    .font(.unica(17))
+                                    .foregroundStyle(.primary)
                                 Spacer()
                                 HStack(spacing: 8) {
                                     ForEach(["1d", "3d", "5d"], id: \.self) { duration in
-                                        Button(duration) {
-                                            // pause logic later
-                                        }
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(.primary)
-                                        .padding(.horizontal, 12)
-                                        .frame(height: 32)
-                                        .background(Color.watrNeutralButtonBackground)
-                                        .clipShape(Capsule())
+                                        pauseButton(duration)
                                     }
                                 }
                             }
-                            .padding(.horizontal, 16)
-                            .frame(height: 52)
+                            Text("Pausing notifications temporarily disables reminders and weekly reports")
+                                .font(.unica(14))
+                                .foregroundStyle(.secondary)
+
+                            if isPaused, let days = activePauseDays {
+                                Text("Paused · Resumes in \(days)d. Tap again to cancel.")
+                                    .font(.unica(13))
+                                    .foregroundStyle(Color.watrPrimary)
+                                    .transition(.opacity)
+                            }
                         }
-                        .watrCardSurface()
-                    }
-                    
-                    // Subscription section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Subscription")
-                            .watrSectionLabel()
-                        
-                        VStack(spacing: 0) {
-                            NavigationLink {
-                                NativeSubscriptionStoreView(productIDs: SubscriptionService.membershipProductIDs)
-                            } label: {
-                                settingRow(icon: "creditcard.fill", label: "View plans")
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .animation(.easeInOut(duration: 0.2), value: isPaused)
+
+                        divider
+
+                        // Disable Notifications row
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 16) {
+                                Text("Disable Notifications")
+                                    .font(.unica(17))
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                Toggle("", isOn: Binding(
+                                    get: { !notificationsEnabled },
+                                    set: { disable in
+                                        notificationsEnabled = !disable
+                                        if disable {
+                                            NotificationService.shared.cancelAll()
+                                            pausedUntilTimestamp = 0
+                                        } else {
+                                            if let profile = ProfileService.shared.load() {
+                                                NotificationService.shared.rescheduleIfNeeded(profile: profile)
+                                            }
+                                        }
+                                    }
+                                ))
+                                .tint(Color.watrPrimary)
+                                .labelsHidden()
                             }
-
-                            Divider().padding(.leading, 56)
-
-                            Button {
-                                showManageSubscriptions = true
-                            } label: {
-                                settingRow(icon: "crown.fill", label: "Manage subscription")
-                            }
-                            .buttonStyle(.plain)
-
-                            Divider().padding(.leading, 56)
-                            settingRow(icon: "gift.fill", label: "Refer a friend — get 1 month free")
+                            Text("Reminders and weekly report notifications will be disabled")
+                                .font(.unica(14))
+                                .foregroundStyle(.secondary)
                         }
-                        .watrCardSurface()
-                    }
-                    
-                    // Support section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Support")
-                            .watrSectionLabel()
-                        
-                        VStack(spacing: 0) {
-                            settingRow(icon: "ant.fill", label: "Report a bug")
-                            Divider().padding(.leading, 56)
-                            settingRow(icon: "bubble.left.fill", label: "Send feedback")
-                            Divider().padding(.leading, 56)
-                            Link(destination: URL(string: "https://watrapp.com/privacy")!) {
-                                settingRow(icon: "hand.raised.fill", label: "Privacy Policy")
-                            }
-                            .foregroundStyle(.primary)
-                            Divider().padding(.leading, 56)
-                            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-                                settingRow(icon: "doc.text.fill", label: "Terms of Use")
-                            }
-                            .foregroundStyle(.primary)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+
+                        divider
+
+                        Button {
+                            showManageSubscriptions = true
+                        } label: {
+                            settingRow(label: "Manage Subscription")
                         }
-                        .watrCardSurface()
-                    }
-                    
-                    #if DEBUG
-                    Button {
-                        SubscriptionService.shared.bypassPaywall()
-                    } label: {
-                        Text("Bypass subscription")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.secondary)
-                    }
+                        .buttonStyle(.plain)
 
-                    Button {
-                        hasCompletedOnboarding = false
-                    } label: {
-                        Text("Re-show onboarding")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.blue.opacity(0.7))
-                    }
+                        divider
 
-                    Button {
-                        ProfileService.shared.clear()
-                        SubscriptionService.shared.clearBypass()
-                        hasCompletedOnboarding = false
-                    } label: {
-                        Text("Reset onboarding")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.red.opacity(0.7))
+                        Link(destination: URL(string: "mailto:watr@vincenttodd.com?subject=Bug%20Report")!) {
+                            settingRow(label: "Report Bug")
+                        }
+                        .foregroundStyle(.primary)
+
+                        divider
+
+                        Link(destination: URL(string: "mailto:watr@vincenttodd.com?subject=Feedback")!) {
+                            settingRow(label: "Send Feedback")
+                        }
+                        .foregroundStyle(.primary)
+
+                        divider
+
+                        Link(destination: URL(string: "https://vincenttodd.com/privacy")!) {
+                            settingRow(label: "Privacy Policy")
+                        }
+                        .foregroundStyle(.primary)
+
+                        divider
+
+                        Link(destination: URL(string: "https://vincenttodd.com/terms")!) {
+                            settingRow(label: "Terms")
+                        }
+                        .foregroundStyle(.primary)
+
+                        divider
                     }
-                    #endif
-                    
-                    Text("Made with ♥ in Chicago")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
+                    .padding(.bottom, 48)
                 }
-                .watrScreenHorizontalPadding()
-                .padding(.top, 20)
-                .padding(.bottom, 48)
             }
         }
-        .navigationTitle("Profile")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
         .manageSubscriptionsSheet(isPresented: $showManageSubscriptions)
-        .onChange(of: notificationsEnabled) { _, enabled in
-            if enabled {
-                if let profile = ProfileService.shared.load() {
-                    NotificationService.shared.rescheduleIfNeeded(profile: profile)
+    }
+
+    // MARK: - Pause button
+
+    @ViewBuilder
+    private func pauseButton(_ duration: String) -> some View {
+        let days: Double = duration == "1d" ? 1 : duration == "3d" ? 3 : 5
+        let isActive: Bool = {
+            guard isPaused, let activeDays = activePauseDays else { return false }
+            return activeDays == Int(days)
+        }()
+
+        let label = Text(duration)
+            .font(.unica(14))
+            .foregroundStyle(isActive ? Color.watrPrimary : .primary)
+            .padding(.horizontal, 14)
+            .frame(height: 32)
+
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if isActive {
+                    pausedUntilTimestamp = 0
+                    if notificationsEnabled, let profile = ProfileService.shared.load() {
+                        NotificationService.shared.rescheduleIfNeeded(profile: profile)
+                    }
+                } else {
+                    pausedUntilTimestamp = Date().addingTimeInterval(days * 86400).timeIntervalSince1970
+                    NotificationService.shared.cancelAll()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + days * 86400) {
+                        guard Date().timeIntervalSince1970 >= self.pausedUntilTimestamp else { return }
+                        if let profile = ProfileService.shared.load() {
+                            NotificationService.shared.rescheduleIfNeeded(profile: profile)
+                        }
+                    }
                 }
+            }
+        } label: {
+            if #available(iOS 26.0, *) {
+                label.glassEffect(.regular.interactive(), in: Capsule())
             } else {
-                NotificationService.shared.cancelAll()
+                label
+                    .background(isActive ? Color.watrPrimarySoft : Color.watrNeutralButtonBackground)
+                    .clipShape(Capsule())
             }
         }
     }
-    
+
+    // MARK: - Divider
+
+    private var divider: some View {
+        Divider()
+            .overlay(Color(red: 0.333, green: 0.369, blue: 0.384).opacity(0.68))
+            .frame(height: 0.75)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 20)
+    }
+
+    // MARK: - Back button
+
     @ViewBuilder
-    func settingRow(icon: String, label: String) -> some View {
-        HStack(spacing: 14) {
-            Image(systemName: icon)
-                .watrIconBadge()
-            
-            Text(label)
-                .font(.system(size: 15))
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12))
-                .foregroundStyle(.tertiary)
+    private var backButton: some View {
+        let label = Text("Back")
+            .font(.unica(15))
+            .foregroundStyle(Color.watrPrimary)
+            .frame(height: 36)
+            .padding(.horizontal, 18)
+        Button {
+            dismiss()
+        } label: {
+            if #available(iOS 26.0, *) {
+                label.glassEffect(.regular.interactive(), in: Capsule())
+            } else {
+                label
+                    .background(Color.watrPrimarySoft)
+                    .clipShape(Capsule())
+            }
         }
-        .padding(.horizontal, 16)
-        .frame(height: 52)
+    }
+
+    // MARK: - Setting row
+
+    @ViewBuilder
+    private func settingRow(label: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.unica(17))
+                .foregroundStyle(.primary)
+            Spacer()
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 20)
+        .contentShape(Rectangle())
     }
 }

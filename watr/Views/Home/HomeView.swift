@@ -26,7 +26,7 @@ struct HomeView: View {
     var gearButton: some View {
         let icon = Image(systemName: "gearshape")
             .font(.system(size: 18, weight: .medium))
-            .foregroundStyle(.primary)
+            .foregroundStyle(Color.watrPrimary)
             .frame(width: 36, height: 36)
         if #available(iOS 26.0, *) {
             icon.glassEffect(.regular.interactive(), in: Circle())
@@ -34,6 +34,22 @@ struct HomeView: View {
             icon
                 .background(Color.watrPrimarySoft)
                 .clipShape(Circle())
+        }
+    }
+
+    @ViewBuilder
+    var customizeButton: some View {
+        let label = Text("Customize")
+            .font(.unica(15))
+            .foregroundStyle(Color.watrPrimary)
+            .frame(height: 36)
+            .padding(.horizontal, 18)
+        if #available(iOS 26.0, *) {
+            label.glassEffect(.regular.interactive(), in: Capsule())
+        } else {
+            label
+                .background(Color.watrPrimarySoft)
+                .clipShape(Capsule())
         }
     }
 
@@ -52,159 +68,20 @@ struct HomeView: View {
                 .ignoresSafeArea()
             
             if let plan {
-                VStack(spacing: 0) {
-                        // Header
-                        HStack {
-                            Image("WATR")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 28)
-                            Spacer()
-                            if #available(iOS 26.0, *) {
-                                GlassEffectContainer {
-                                    NavigationLink {
-                                        SettingsView()
-                                    } label: {
-                                        gearButton
-                                    }
-                                }
-                            } else {
-                                NavigationLink {
-                                    SettingsView()
-                                } label: {
-                                    gearButton
-                                }
-                            }
-                        }
-                        .watrScreenHorizontalPadding()
-                        .padding(.top, 52)
-                        .padding(.bottom, 28)
-                        
-                    ScrollView{
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVStack(spacing: 0) {
+                        // SECTION 1 — Today + windows
+                        todaySection(plan: plan)
+                            .containerRelativeFrame(.vertical)
 
-                        // Hero
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Today")
-                                .watrSectionLabel()
-                            
-                            HStack(alignment: .bottom, spacing: 4) {
-                                Text("\(Int(plan.totalOz))")
-                                    .font(.system(size: 64, weight: .light))
-                                Text("oz")
-                                    .font(.system(size: 20, weight: .light))
-                                    .foregroundStyle(.secondary)
-                                    .padding(.bottom, 10)
-                            }
-                            
-                            if let weather {
-                                Text("\(weather.condition) · \(Int(weather.temperatureF))°F")
-                                    .font(.system(size: 14, weight: .light))
-                                    .foregroundStyle(.secondary)
-                            } else if weatherError != nil {
-                                Button {
-                                    Task { await loadPlan(forceWeatherRefresh: true) }
-                                } label: {
-                                    Text("Weather unavailable — tap to retry")
-                                        .font(.system(size: 14, weight: .light))
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .watrScreenHorizontalPadding()
-                        .padding(.bottom, 24)
-
-
-                        // Next window card
-                        if let nextWindow = plan.nextWindow {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Up next")
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundStyle(.white.opacity(0.7))
-                                    .textCase(.uppercase)
-                                    .tracking(1)
-                                
-                                Text(nextWindow.name)
-                                    .font(.system(size: 22, weight: .medium))
-                                    .foregroundStyle(.white)
-                                
-                                Text(windowTimeString(nextWindow))
-                                    .font(.system(size: 14, weight: .light))
-                                    .foregroundStyle(.white.opacity(0.75))
-                                
-                                HStack(alignment: .bottom, spacing: 4) {
-                                    Text("\(Int(nextWindow.minOz))–\(Int(nextWindow.maxOz))")
-                                        .font(.system(size: 48, weight: .light))
-                                        .foregroundStyle(.white)
-                                    Text("oz")
-                                        .font(.system(size: 18, weight: .light))
-                                        .foregroundStyle(.white.opacity(0.8))
-                                        .padding(.bottom, 8)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(22)
-                            .background(Color.watrPrimary)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .watrScreenHorizontalPadding()
-                            .padding(.bottom, 28)
-                        }
-                        
-                        // Windows list
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("Today's windows")
-                                .watrSectionLabel()
-                                .watrScreenHorizontalPadding()
-                                .padding(.bottom, 14)
-                            
-                            ForEach(plan.windows) { window in
-                            HStack {
-                                Circle()
-                                    .frame(width: 8, height: 8)
-                                    .foregroundStyle(
-                                        isCurrentWindow(window, plan: plan) ?
-                                        Color.watrPrimary :
-                                        Color.gray.opacity(0.3)
-                                    )
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(window.name)
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundStyle(
-                                            isCurrentWindow(window, plan: plan) ?
-                                            Color.watrPrimary :
-                                            .primary
-                                        )
-                                    Text(windowTimeString(window))
-                                        .font(.system(size: 14))
-                                        .foregroundStyle(.secondary)
-                                }
-                                
-                                Spacer()
-                                
-                                HStack(alignment: .bottom, spacing: 2) {
-                                    Text("\(Int(window.minOz))–\(Int(window.maxOz))")
-                                        .font(.system(size: 24, weight: .light))
-                                    Text("oz")
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(.secondary)
-                                        .padding(.bottom, 4)
-                                }
-                            }
-                            .padding(.vertical, 14)
-                            .watrScreenHorizontalPadding()
-                            Divider()
-                                .padding(.leading, 28)
-                        }
-                        }
-
-                        StreakFooterView(
-                            streak: streakService.currentStreak,
-                            message: streakService.message
-                        )
+                        // SECTION 2 — Streak
+                        streakSection
+                            .containerRelativeFrame(.vertical)
                     }
-                    .scrollIndicators(.hidden)
+                    .scrollTargetLayout()
                 }
+                .scrollTargetBehavior(.paging)
+                .ignoresSafeArea(edges: .bottom)
             } else {
                 ProgressView()
                     .tint(Color.watrPrimary)
@@ -219,6 +96,182 @@ struct HomeView: View {
             if phase == .active {
                 Task { await loadPlan() }
             }
+        }
+    }
+
+    // MARK: - Section 1
+
+    @ViewBuilder
+    private func todaySection(plan: HydrationPlan) -> some View {
+        VStack(spacing: 0) {
+            // Top buttons
+            HStack {
+                if #available(iOS 26.0, *) {
+                    GlassEffectContainer {
+                        NavigationLink {
+                            CustomizeView()
+                        } label: {
+                            customizeButton
+                        }
+                    }
+                } else {
+                    NavigationLink {
+                        CustomizeView()
+                    } label: {
+                        customizeButton
+                    }
+                }
+
+                Spacer()
+
+                if #available(iOS 26.0, *) {
+                    GlassEffectContainer {
+                        NavigationLink {
+                            SettingsView()
+                        } label: {
+                            gearButton
+                        }
+                    }
+                } else {
+                    NavigationLink {
+                        SettingsView()
+                    } label: {
+                        gearButton
+                    }
+                }
+            }
+            .watrScreenHorizontalPadding()
+            .padding(.top, 4)
+            .padding(.bottom, 12)
+
+            // Logo + Today total row
+            HStack(alignment: .center) {
+                Image("WATR")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 28)
+
+                Spacer()
+
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                    Text("Today")
+                        .font(.unica(16))
+                        .foregroundStyle(.secondary)
+                    Text("\(Int(plan.totalOz))")
+                        .font(.unica(36))
+                    Text("oz")
+                        .font(.unica(24))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .watrScreenHorizontalPadding()
+            .padding(.bottom, 16)
+
+            Divider()
+                .overlay(Color(red: 0.333, green: 0.369, blue: 0.384).opacity(0.68))
+                .frame(height: 0.75)
+                .padding(.horizontal, 16)
+
+            // Windows list
+            VStack(spacing: 0) {
+                ForEach(Array(plan.windows.enumerated()), id: \.element.id) { index, window in
+                    windowRow(window, plan: plan)
+                    if index < plan.windows.count - 1 {
+                        Divider()
+                            .overlay(Color(red: 0.333, green: 0.369, blue: 0.384).opacity(0.68))
+                            .frame(height: 0.75)
+                            .padding(.horizontal, 16)
+                    }
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    @ViewBuilder
+    private func windowRow(_ window: HydrationWindow, plan: HydrationPlan) -> some View {
+        let isCurrent = isCurrentWindow(window, plan: plan)
+
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(window.name)
+                    .font(.unica(16))
+                    .foregroundStyle(.secondary)
+                Text(roundedWindowTimeString(window))
+                    .font(.unica(36))
+                    .tracking(-0.36)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+
+            Spacer()
+
+            HStack(alignment: .bottom, spacing: 2) {
+                Text("\(Int(window.minOz))-\(Int(window.maxOz))")
+                    .font(.unica(48))
+                Text("oz")
+                    .font(.unica(24))
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 6)
+            }
+        }
+        .watrScreenHorizontalPadding()
+        .padding(.vertical, 12)
+        .frame(height: 92)
+        .background(
+            isCurrent
+                ? RoundedRectangle(cornerRadius: 0)
+                    .fill(Color(red: 0.008, green: 0.153, blue: 0.376).opacity(0.10))
+                    .blur(radius: 12)
+                : nil
+        )
+    }
+
+    // MARK: - Section 2
+
+    @ViewBuilder
+    private var streakSection: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: 12) {
+                Text("\(streakService.currentStreak)")
+                    .font(.unica(64))
+                Text("Day Streak")
+                    .font(.unica(18))
+                    .foregroundStyle(.secondary)
+            }
+
+            ZStack {
+                Color(red: 0.008, green: 0.153, blue: 0.376)
+                    .opacity(0.10)
+                    .blur(radius: 60)
+                    .frame(height: 320)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(streakService.message.title)
+                        .font(.unica(16))
+                    Text(streakService.message.body)
+                        .font(.unica(14))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+            }
+            .frame(maxWidth: .infinity)
+            .watrScreenHorizontalPadding()
+            .padding(.top, 32)
+
+            Spacer()
+
+            Image("WATR")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 48)
         }
     }
     
@@ -287,6 +340,43 @@ struct HomeView: View {
         }
         
         return "\(formatTime(hour: startHour, minute: startMinute)) – \(formatTime(hour: endHour, minute: endMinute))"
+    }
+
+    /// Display-only: rounds each window's start/end to the nearest hour
+    /// without mutating the underlying times used for notification scheduling.
+    func roundedWindowTimeString(_ window: HydrationWindow) -> String {
+        func roundedHour(hour: Int, minute: Int) -> Int {
+            var h = hour
+            if minute >= 30 {
+                h = (h + 1) % 24
+            }
+            return h
+        }
+
+        let startHour = window.startTime.hour ?? 0
+        let startMinute = window.startTime.minute ?? 0
+        let endHour = window.endTime.hour ?? 0
+        let endMinute = window.endTime.minute ?? 0
+
+        let roundedStart = roundedHour(hour: startHour, minute: startMinute)
+        let roundedEnd = roundedHour(hour: endHour, minute: endMinute)
+
+        func formatHour(_ hour: Int) -> String {
+            let period = hour >= 12 ? "PM" : "AM"
+            let displayHour = hour % 12 == 0 ? 12 : hour % 12
+            return "\(displayHour) \(period)"
+        }
+
+        let startPeriod = roundedStart >= 12 ? "PM" : "AM"
+        let endPeriod = roundedEnd >= 12 ? "PM" : "AM"
+        let startDisplayHour = roundedStart % 12 == 0 ? 12 : roundedStart % 12
+        let endDisplayHour = roundedEnd % 12 == 0 ? 12 : roundedEnd % 12
+
+        if startPeriod == endPeriod {
+            return "\(startDisplayHour)-\(endDisplayHour) \(endPeriod)"
+        } else {
+            return "\(formatHour(roundedStart))-\(formatHour(roundedEnd))"
+        }
     }
     
     func isCurrentWindow(_ window: HydrationWindow, plan: HydrationPlan) -> Bool {

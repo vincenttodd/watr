@@ -19,7 +19,7 @@ struct OnboardingDrinkView: View {
             
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("What do you usually drink?")
+                    Text("Whats your main souce of liquids?")
                         .watrScreenTitle()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -29,7 +29,7 @@ struct OnboardingDrinkView: View {
                 Spacer()
                 
                 VStack(spacing: 12) {
-                    ForEach(["Tap/purified water", "Spring water", "Coffee", "Tea", "Soda", "Other"], id: \.self) { drink in
+                    ForEach(["Water", "Energy drinks", "Sports drinks", "Coffee/Tea", "Soda", "Other"], id: \.self) { drink in
                         Button {
                             navigate = true
                         } label: {

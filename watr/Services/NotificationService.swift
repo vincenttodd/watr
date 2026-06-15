@@ -62,14 +62,12 @@ class NotificationService {
     func scheduleNext(profile: UserProfile, referenceDate: Date = Date()) {
         guard let cached = NotificationPlanCache.shared.load(referenceDate: referenceDate) else { return }
 
-        let center = UNUserNotificationCenter.current()
-        cancelPendingWatrNotifications(center: center)
-        clearDeliveredHydrationNotifications()
-
         let calendar = Calendar.current
         let now = Date()
         let resolved = resolvedPlans(from: cached, referenceDate: referenceDate, calendar: calendar)
 
+        // Determine what to schedule synchronously before doing any async work
+        let reminder: ScheduledReminder?
         if let next = nextReminder(
             plan: resolved.todayPlan,
             profile: profile,
@@ -77,11 +75,8 @@ class NotificationService {
             now: now,
             calendar: calendar
         ) {
-            enqueue(next, calendar: calendar)
-            return
-        }
-
-        guard
+            reminder = next
+        } else if
             let tomorrowPlan = resolved.tomorrowPlan,
             let tomorrowDate = resolved.tomorrowDate,
             let next = nextReminder(
@@ -91,9 +86,25 @@ class NotificationService {
                 now: now,
                 calendar: calendar
             )
-        else { return }
+        {
+            reminder = next
+        } else {
+            reminder = nil
+        }
 
-        enqueue(next, calendar: calendar)
+        // Cancel then enqueue inside the callback so there's no race condition
+        let center = UNUserNotificationCenter.current()
+        clearDeliveredHydrationNotifications()
+        center.getPendingNotificationRequests { [weak self] requests in
+            guard let self else { return }
+            let watrIds = requests.map(\.identifier).filter { $0.hasPrefix("watr-") }
+            if !watrIds.isEmpty {
+                center.removePendingNotificationRequests(withIdentifiers: watrIds)
+            }
+            if let reminder {
+                self.enqueue(reminder, calendar: calendar)
+            }
+        }
     }
 
     func handle(response: UNNotificationResponse) {
@@ -122,18 +133,22 @@ class NotificationService {
                 guard index < plan.windows.count else { return }
                 let window = plan.windows[index]
                 let fireDate = Date().addingTimeInterval(TimeInterval(snoozeMinutes * 60))
-                cancelPendingWatrNotifications(center: center)
-                enqueue(
-                    ScheduledReminder(
-                        window: window,
-                        index: index,
-                        totalCount: plan.windows.count,
-                        fireDate: fireDate,
-                        dayKey: dayKey,
-                        planDay: planDay
-                    ),
-                    calendar: calendar
+                let snoozeReminder = ScheduledReminder(
+                    window: window,
+                    index: index,
+                    totalCount: plan.windows.count,
+                    fireDate: fireDate,
+                    dayKey: dayKey,
+                    planDay: planDay
                 )
+                center.getPendingNotificationRequests { [weak self] requests in
+                    guard let self else { return }
+                    let watrIds = requests.map(\.identifier).filter { $0.hasPrefix("watr-") }
+                    if !watrIds.isEmpty {
+                        center.removePendingNotificationRequests(withIdentifiers: watrIds)
+                    }
+                    self.enqueue(snoozeReminder, calendar: calendar)
+                }
             }
         default:
             break

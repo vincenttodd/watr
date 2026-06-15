@@ -25,7 +25,6 @@ struct OnboardingNotificationView: View {
                         .multilineTextAlignment(.center)
                         .watrScreenHorizontalPadding()
                     
-<<<<<<< HEAD
                     Text("We send one reminder at a time. Long-press and tap Got it to get the next one — no need to open the app.")
                         .watrScreenSubtitle()
                         .multilineTextAlignment(.center)

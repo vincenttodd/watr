@@ -72,6 +72,7 @@ class OnboardingState: ObservableObject {
             workoutDays: workoutDays,
             workoutTimes: workoutTimes,
             workoutIntensity: workoutIntensity,
+            mealTimes: UserProfile.defaultMealTimes(),
             zipCode: zipCode
         )
     }

@@ -68,7 +68,23 @@ final class SubscriptionService: ObservableObject {
             }
         }
 
+        let wasSubscribed = isSubscribed
         isSubscribed = active
         isLoadingStatus = false
+
+        if active && !wasSubscribed {
+            // Newly subscribed — activate notifications with 10-min delay
+            if let profile = ProfileService.shared.load(),
+               let cached = NotificationPlanCache.shared.load() {
+                NotificationService.shared.activateAndScheduleDelayed(
+                    profile: profile,
+                    todayPlan: cached.today,
+                    tomorrowPlan: cached.tomorrow
+                )
+            }
+        } else if !active && wasSubscribed {
+            // Lapsed or cancelled — kill notifications
+            NotificationService.shared.deactivate()
+        }
     }
 }

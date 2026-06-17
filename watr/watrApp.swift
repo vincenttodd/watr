@@ -23,6 +23,7 @@ struct watrApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(subscriptionService)
+                .preferredColorScheme(.light)
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
                         Task { await SubscriptionService.shared.refreshSubscriptionStatus() }
@@ -31,4 +32,3 @@ struct watrApp: App {
         }
     }
 }
-    

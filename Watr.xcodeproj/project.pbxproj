@@ -6,8 +6,41 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		45DC847A2FE1FDD000B4AEA5 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 45DC84792FE1FDD000B4AEA5 /* UserNotifications.framework */; };
+		45DC847C2FE1FDD000B4AEA5 /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 45DC847B2FE1FDD000B4AEA5 /* UserNotificationsUI.framework */; };
+		45DC84862FE1FDD000B4AEA5 /* WatrNotificationContent.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 45DC84772FE1FDD000B4AEA5 /* WatrNotificationContent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		45DC84842FE1FDD000B4AEA5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 45715B932FBBE35000B0BA5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 45DC84762FE1FDD000B4AEA5;
+			remoteInfo = WatrNotificationContent;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		45DC848B2FE1FDD000B4AEA5 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				45DC84862FE1FDD000B4AEA5 /* WatrNotificationContent.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		45715B9B2FBBE35000B0BA5A /* watr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = watr.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		45DC84772FE1FDD000B4AEA5 /* WatrNotificationContent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WatrNotificationContent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		45DC84792FE1FDD000B4AEA5 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
+		45DC847B2FE1FDD000B4AEA5 /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -18,6 +51,20 @@
 			);
 			target = 45715B9A2FBBE35000B0BA5A /* watr */;
 		};
+		45DC848A2FE1FDD000B4AEA5 /* Exceptions for "WatrNotificationContent" folder in "WatrNotificationContent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 45DC84762FE1FDD000B4AEA5 /* WatrNotificationContent */;
+		};
+		45DC848F2FE1FEB300B4AEA5 /* Exceptions for "watr" folder in "WatrNotificationContent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				NeueHaasUnicaRegular.ttf,
+			);
+			target = 45DC84762FE1FDD000B4AEA5 /* WatrNotificationContent */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -25,8 +72,17 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				453B82DF2FD46BBA00A24D24 /* Exceptions for "watr" folder in "watr" target */,
+				45DC848F2FE1FEB300B4AEA5 /* Exceptions for "watr" folder in "WatrNotificationContent" target */,
 			);
 			path = watr;
+			sourceTree = "<group>";
+		};
+		45DC847D2FE1FDD000B4AEA5 /* WatrNotificationContent */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				45DC848A2FE1FDD000B4AEA5 /* Exceptions for "WatrNotificationContent" folder in "WatrNotificationContent" target */,
+			);
+			path = WatrNotificationContent;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -39,6 +95,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		45DC84742FE1FDD000B4AEA5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				45DC847C2FE1FDD000B4AEA5 /* UserNotificationsUI.framework in Frameworks */,
+				45DC847A2FE1FDD000B4AEA5 /* UserNotifications.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -46,6 +111,8 @@
 			isa = PBXGroup;
 			children = (
 				45715B9D2FBBE35000B0BA5A /* watr */,
+				45DC847D2FE1FDD000B4AEA5 /* WatrNotificationContent */,
+				45DC84782FE1FDD000B4AEA5 /* Frameworks */,
 				45715B9C2FBBE35000B0BA5A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,8 +121,18 @@
 			isa = PBXGroup;
 			children = (
 				45715B9B2FBBE35000B0BA5A /* watr.app */,
+				45DC84772FE1FDD000B4AEA5 /* WatrNotificationContent.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		45DC84782FE1FDD000B4AEA5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				45DC84792FE1FDD000B4AEA5 /* UserNotifications.framework */,
+				45DC847B2FE1FDD000B4AEA5 /* UserNotificationsUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -68,10 +145,12 @@
 				45715B972FBBE35000B0BA5A /* Sources */,
 				45715B982FBBE35000B0BA5A /* Frameworks */,
 				45715B992FBBE35000B0BA5A /* Resources */,
+				45DC848B2FE1FDD000B4AEA5 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				45DC84852FE1FDD000B4AEA5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				45715B9D2FBBE35000B0BA5A /* watr */,
@@ -82,6 +161,28 @@
 			productName = watr;
 			productReference = 45715B9B2FBBE35000B0BA5A /* watr.app */;
 			productType = "com.apple.product-type.application";
+		};
+		45DC84762FE1FDD000B4AEA5 /* WatrNotificationContent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 45DC84872FE1FDD000B4AEA5 /* Build configuration list for PBXNativeTarget "WatrNotificationContent" */;
+			buildPhases = (
+				45DC84732FE1FDD000B4AEA5 /* Sources */,
+				45DC84742FE1FDD000B4AEA5 /* Frameworks */,
+				45DC84752FE1FDD000B4AEA5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				45DC847D2FE1FDD000B4AEA5 /* WatrNotificationContent */,
+			);
+			name = WatrNotificationContent;
+			packageProductDependencies = (
+			);
+			productName = WatrNotificationContent;
+			productReference = 45DC84772FE1FDD000B4AEA5 /* WatrNotificationContent.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -94,6 +195,9 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					45715B9A2FBBE35000B0BA5A = {
+						CreatedOnToolsVersion = 26.4;
+					};
+					45DC84762FE1FDD000B4AEA5 = {
 						CreatedOnToolsVersion = 26.4;
 					};
 				};
@@ -113,12 +217,20 @@
 			projectRoot = "";
 			targets = (
 				45715B9A2FBBE35000B0BA5A /* watr */,
+				45DC84762FE1FDD000B4AEA5 /* WatrNotificationContent */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		45715B992FBBE35000B0BA5A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		45DC84752FE1FDD000B4AEA5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +247,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		45DC84732FE1FDD000B4AEA5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		45DC84852FE1FDD000B4AEA5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 45DC84762FE1FDD000B4AEA5 /* WatrNotificationContent */;
+			targetProxy = 45DC84842FE1FDD000B4AEA5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		45715BA42FBBE35100B0BA5A /* Debug */ = {
@@ -335,6 +462,64 @@
 			};
 			name = Release;
 		};
+		45DC84882FE1FDD000B4AEA5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F5QNV947ZV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WatrNotificationContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WatrNotificationContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dev.watr.WatrNotificationContent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		45DC84892FE1FDD000B4AEA5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F5QNV947ZV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WatrNotificationContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WatrNotificationContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dev.watr.WatrNotificationContent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -352,6 +537,15 @@
 			buildConfigurations = (
 				45715BA72FBBE35100B0BA5A /* Debug */,
 				45715BA82FBBE35100B0BA5A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		45DC84872FE1FDD000B4AEA5 /* Build configuration list for PBXNativeTarget "WatrNotificationContent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				45DC84882FE1FDD000B4AEA5 /* Debug */,
+				45DC84892FE1FDD000B4AEA5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -17,7 +17,7 @@ struct HomeView: View {
     @State private var weatherError: String? = nil
     @State private var lastWeatherFetch: Date? = nil
 
-    private let weatherFetchInterval: TimeInterval = 10 * 60 // 10 minutes
+    private let weatherFetchInterval: TimeInterval = 10 * 60
 
     let engine = HydrationEngine()
     let weatherService = WeatherService()
@@ -53,15 +53,6 @@ struct HomeView: View {
         }
     }
 
-    var greeting: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
-        case 0..<12: return "Good morning."
-        case 12..<17: return "Good afternoon."
-        default: return "Good evening."
-        }
-    }
-    
     var body: some View {
         ZStack {
             Color.watrScreenBackground
@@ -70,11 +61,8 @@ struct HomeView: View {
             if let plan {
                 ScrollView(.vertical, showsIndicators: false) {
                     LazyVStack(spacing: 0) {
-                        // SECTION 1 — Today + windows
                         todaySection(plan: plan)
                             .containerRelativeFrame(.vertical)
-
-                        // SECTION 2 — Streak
                         streakSection
                             .containerRelativeFrame(.vertical)
                     }
@@ -104,7 +92,6 @@ struct HomeView: View {
     @ViewBuilder
     private func todaySection(plan: HydrationPlan) -> some View {
         VStack(spacing: 0) {
-            // Top buttons
             HStack {
                 if #available(iOS 26.0, *) {
                     GlassEffectContainer {
@@ -140,11 +127,10 @@ struct HomeView: View {
                     }
                 }
             }
-            .watrScreenHorizontalPadding()
+            .padding(.horizontal, 18)
             .padding(.top, 4)
             .padding(.bottom, 12)
 
-            // Logo + Today total row
             HStack(alignment: .center) {
                 Image("WATR")
                     .resizable()
@@ -164,15 +150,14 @@ struct HomeView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .watrScreenHorizontalPadding()
+            .padding(.horizontal, 18)
             .padding(.bottom, 16)
 
             Divider()
                 .overlay(Color(red: 0.333, green: 0.369, blue: 0.384).opacity(0.68))
                 .frame(height: 0.75)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 18)
 
-            // Windows list
             VStack(spacing: 0) {
                 ForEach(Array(plan.windows.enumerated()), id: \.element.id) { index, window in
                     windowRow(window, plan: plan)
@@ -180,7 +165,7 @@ struct HomeView: View {
                         Divider()
                             .overlay(Color(red: 0.333, green: 0.369, blue: 0.384).opacity(0.68))
                             .frame(height: 0.75)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 18)
                     }
                 }
             }
@@ -198,7 +183,7 @@ struct HomeView: View {
                 Text(window.name)
                     .font(.unica(16))
                     .foregroundStyle(.secondary)
-                Text(roundedWindowTimeString(window))
+                Text(smartWindowTimeString(window))
                     .font(.unica(36))
                     .tracking(-0.36)
                     .foregroundStyle(.primary)
@@ -217,7 +202,7 @@ struct HomeView: View {
                     .padding(.bottom, 6)
             }
         }
-        .watrScreenHorizontalPadding()
+        .padding(.horizontal, 18)
         .padding(.vertical, 12)
         .frame(height: 92)
         .background(
@@ -236,33 +221,36 @@ struct HomeView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 Text("\(streakService.currentStreak)")
                     .font(.unica(64))
+                    .frame(maxWidth: .infinity, alignment: .center)
                 Text("Day Streak")
                     .font(.unica(18))
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
+            .padding(.bottom, 24)
 
-            ZStack {
+            // Fixed-size streak box — blurred, no border
+            VStack(alignment: .leading, spacing: 8) {
+                Text(streakService.message.title)
+                    .font(.unica(16))
+                    .foregroundStyle(.primary)
+                Text(streakService.message.body)
+                    .font(.unica(14))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(
                 Color(red: 0.008, green: 0.153, blue: 0.376)
                     .opacity(0.10)
-                    .blur(radius: 60)
-                    .frame(height: 320)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(streakService.message.title)
-                        .font(.unica(16))
-                    Text(streakService.message.body)
-                        .font(.unica(14))
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-            }
-            .frame(maxWidth: .infinity)
-            .watrScreenHorizontalPadding()
-            .padding(.top, 32)
+                    .blur(radius: 16)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .padding(.horizontal, 18)
 
             Spacer()
 
@@ -325,58 +313,24 @@ struct HomeView: View {
             )
         }
     }
-    
-    func windowTimeString(_ window: HydrationWindow) -> String {
-        let startHour = window.startTime.hour ?? 0
-        let startMinute = window.startTime.minute ?? 0
-        let endHour = window.endTime.hour ?? 0
-        let endMinute = window.endTime.minute ?? 0
-        
-        func formatTime(hour: Int, minute: Int) -> String {
-            let period = hour >= 12 ? "PM" : "AM"
-            let displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour)
-            let minuteStr = minute == 0 ? "" : ":\(String(format: "%02d", minute))"
-            return "\(displayHour)\(minuteStr) \(period)"
-        }
-        
-        return "\(formatTime(hour: startHour, minute: startMinute)) – \(formatTime(hour: endHour, minute: endMinute))"
-    }
 
-    /// Display-only: rounds each window's start/end to the nearest hour
-    /// without mutating the underlying times used for notification scheduling.
-    func roundedWindowTimeString(_ window: HydrationWindow) -> String {
+    // Always: "8-9 AM", "11-1 PM", "11 AM-1 PM" — period only on the end time
+    func smartWindowTimeString(_ window: HydrationWindow) -> String {
         func roundedHour(hour: Int, minute: Int) -> Int {
             var h = hour
-            if minute >= 30 {
-                h = (h + 1) % 24
-            }
+            if minute >= 30 { h = (h + 1) % 24 }
             return h
         }
 
-        let startHour = window.startTime.hour ?? 0
-        let startMinute = window.startTime.minute ?? 0
-        let endHour = window.endTime.hour ?? 0
-        let endMinute = window.endTime.minute ?? 0
+        let rStart = roundedHour(hour: window.startTime.hour ?? 0, minute: window.startTime.minute ?? 0)
+        let rEnd   = roundedHour(hour: window.endTime.hour   ?? 0, minute: window.endTime.minute   ?? 0)
 
-        let roundedStart = roundedHour(hour: startHour, minute: startMinute)
-        let roundedEnd = roundedHour(hour: endHour, minute: endMinute)
+        let endPeriod    = rEnd   >= 12 ? "PM" : "AM"
+        let startDisplay = rStart % 12 == 0 ? 12 : rStart % 12
+        let endDisplay   = rEnd   % 12 == 0 ? 12 : rEnd   % 12
 
-        func formatHour(_ hour: Int) -> String {
-            let period = hour >= 12 ? "PM" : "AM"
-            let displayHour = hour % 12 == 0 ? 12 : hour % 12
-            return "\(displayHour) \(period)"
-        }
-
-        let startPeriod = roundedStart >= 12 ? "PM" : "AM"
-        let endPeriod = roundedEnd >= 12 ? "PM" : "AM"
-        let startDisplayHour = roundedStart % 12 == 0 ? 12 : roundedStart % 12
-        let endDisplayHour = roundedEnd % 12 == 0 ? 12 : roundedEnd % 12
-
-        if startPeriod == endPeriod {
-            return "\(startDisplayHour)-\(endDisplayHour) \(endPeriod)"
-        } else {
-            return "\(formatHour(roundedStart))-\(formatHour(roundedEnd))"
-        }
+        // Always omit period on start, only show on end
+        return "\(startDisplay)-\(endDisplay) \(endPeriod)"
     }
     
     func isCurrentWindow(_ window: HydrationWindow, plan: HydrationPlan) -> Bool {

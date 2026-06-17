@@ -24,6 +24,13 @@ class NotificationService {
         static let windowIndex = "windowIndex"
     }
 
+    private static let activatedKey = "notificationsActivated"
+
+    static var isActivated: Bool {
+        get { UserDefaults.standard.bool(forKey: activatedKey) }
+        set { UserDefaults.standard.set(newValue, forKey: activatedKey) }
+    }
+
     private let snoozeMinutes = 15
 
     func requestPermission() async -> Bool {
@@ -32,12 +39,34 @@ class NotificationService {
         return granted ?? false
     }
 
+    func activateAndScheduleDelayed(
+        profile: UserProfile,
+        todayPlan: HydrationPlan,
+        tomorrowPlan: HydrationPlan
+    ) {
+        NotificationService.isActivated = true
+        NotificationPlanCache.shared.save(
+            today: todayPlan,
+            tomorrow: tomorrowPlan,
+            referenceDate: Date()
+        )
+        DispatchQueue.main.asyncAfter(deadline: .now() + 600) { [weak self] in
+            self?.scheduleNext(profile: profile)
+        }
+    }
+
+    func deactivate() {
+        NotificationService.isActivated = false
+        cancelAll()
+    }
+
     func scheduleUpcoming(
         profile: UserProfile,
         todayPlan: HydrationPlan,
         tomorrowPlan: HydrationPlan,
         referenceDate: Date = Date()
     ) {
+        guard NotificationService.isActivated else { return }
         NotificationPlanCache.shared.save(
             today: todayPlan,
             tomorrow: tomorrowPlan,
@@ -56,17 +85,18 @@ class NotificationService {
     }
 
     func rescheduleIfNeeded(profile: UserProfile, referenceDate: Date = Date()) {
+        guard NotificationService.isActivated else { return }
         scheduleNext(profile: profile, referenceDate: referenceDate)
     }
 
     func scheduleNext(profile: UserProfile, referenceDate: Date = Date()) {
+        guard NotificationService.isActivated else { return }
         guard let cached = NotificationPlanCache.shared.load(referenceDate: referenceDate) else { return }
 
         let calendar = Calendar.current
         let now = Date()
         let resolved = resolvedPlans(from: cached, referenceDate: referenceDate, calendar: calendar)
 
-        // Determine what to schedule synchronously before doing any async work
         let reminder: ScheduledReminder?
         if let next = nextReminder(
             plan: resolved.todayPlan,
@@ -92,7 +122,6 @@ class NotificationService {
             reminder = nil
         }
 
-        // Cancel then enqueue inside the callback so there's no race condition
         let center = UNUserNotificationCenter.current()
         clearDeliveredHydrationNotifications()
         center.getPendingNotificationRequests { [weak self] requests in
@@ -171,12 +200,12 @@ class NotificationService {
 
     func registerCategories() {
         let doneAction = UNNotificationAction(
-            identifier: Action.done,
-            title: "Got it",
+            identifier: "DONE",
+            title: "Done",
             options: []
         )
         let snoozeAction = UNNotificationAction(
-            identifier: Action.snooze,
+            identifier: "SNOOZE",
             title: "Remind Me Later",
             options: []
         )
@@ -184,7 +213,7 @@ class NotificationService {
             identifier: "HYDRATION_REMINDER",
             actions: [doneAction, snoozeAction],
             intentIdentifiers: [],
-            options: []
+            options: .customDismissAction
         )
         UNUserNotificationCenter.current().setNotificationCategories([category])
     }
@@ -223,10 +252,8 @@ class NotificationService {
             )
         }
 
-        if
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart),
-            cachedStart == yesterday
-        {
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart),
+           cachedStart == yesterday {
             return ResolvedPlans(
                 todayPlan: cached.tomorrow,
                 todayDate: todayStart,
@@ -274,9 +301,7 @@ class NotificationService {
                 let windowEnd = ScheduleTime.resolvedTime(from: window.endTime, on: planDay, calendar: calendar)
             else { continue }
 
-            if now >= windowEnd {
-                continue
-            }
+            if now >= windowEnd { continue }
 
             let scheduleDate: Date
             if fireDate > now {
@@ -334,7 +359,7 @@ class NotificationService {
         )
 
         UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
+            if let error {
                 print("Notification error: \(error)")
             }
         }
@@ -370,27 +395,32 @@ class NotificationService {
 
     private func notificationTitle(for window: HydrationWindow) -> String {
         switch window.name {
-        case "Upon Waking":
-            return "Good morning — start your day hydrated."
-        case "After Breakfast":
-            return "Small hydration break?"
-        case "Mid Morning":
-            return "You're on pace today."
-        case "With Lunch":
-            return "Good time to sip."
-        case "Pre-Workout":
-            return "Hydrate before you sweat."
-        case "Post-Workout":
-            return "Replenish after your workout."
-        case "Wind Down":
-            return "Last hydration window of the day."
-        default:
-            return "Small hydration break?"
+        case "Upon Waking":     return "wakey wakey"
+        case "After Breakfast": return "breakfast check"
+        case "With Lunch":      return "lunch szn = hydration szn"
+        case "Afternoon":       return "don't ghost your water bottle"
+        case "Late Afternoon":  return "almost there, keep it up"
+        case "Pre-Workout":     return "pre-workout hydration unlocked"
+        case "Post-Workout":    return "you sweated. now drink up"
+        case "With Dinner":     return "dinner time, water time"
+        case "Wind Down":       return "last call for hydration"
+        default:                return "yo, water break"
         }
     }
 
     private func notificationBody(for window: HydrationWindow) -> String {
         let oz = Int(window.minOz)
-        return "Around \(oz)oz for your \(window.name.lowercased()) window. Tap when done."
+        let phrases = [
+            "drink \(oz)oz rn no excuses",
+            "your body is literally asking for \(oz)oz",
+            "sip \(oz)oz and keep the streak alive",
+            "\(oz)oz standing between you and peak hydration",
+            "not drinking \(oz)oz is not the vibe",
+            "hydration check: \(oz)oz, go",
+            "\(oz)oz. tap done when you're good.",
+        ]
+        // Pick based on window name hash so it's consistent per window
+        let index = abs(window.name.hashValue) % phrases.count
+        return phrases[index]
     }
 }

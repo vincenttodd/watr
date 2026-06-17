@@ -7,6 +7,7 @@
 
 import SwiftUI
 import StoreKit
+import UserNotifications
 
 struct SettingsView: View {
 
@@ -33,7 +34,6 @@ struct SettingsView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Top bar
                 HStack {
                     backButton
                     Spacer()
@@ -150,6 +150,129 @@ struct SettingsView: View {
                         .foregroundStyle(.primary)
 
                         divider
+
+                        #if DEBUG
+                        VStack(spacing: 0) {
+                            // Test notification
+                            Button {
+                                let content = UNMutableNotificationContent()
+                                content.title = "wakey wakey 💧"
+                                content.body = "drink 13oz rn no excuses"
+                                content.sound = .default
+                                content.categoryIdentifier = "HYDRATION_REMINDER"
+                                content.userInfo = [
+                                    "windowName": "Upon Waking",
+                                    "dayKey": dayKey(),
+                                    "windowIndex": 0
+                                ]
+                                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+                                let request = UNNotificationRequest(
+                                    identifier: "watr-test",
+                                    content: content,
+                                    trigger: trigger
+                                )
+                                UNUserNotificationCenter.current().add(request)
+                            } label: {
+                                Text("Test notification (5s)")
+                                    .font(.unica(15))
+                                    .foregroundStyle(.orange)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 20)
+                            }
+
+                            divider
+
+                            // Force activate notifications
+                            Button {
+                                NotificationService.isActivated = true
+                                if let profile = ProfileService.shared.load() {
+                                    NotificationService.shared.scheduleNext(profile: profile)
+                                }
+                            } label: {
+                                Text("Force activate notifications")
+                                    .font(.unica(15))
+                                    .foregroundStyle(.green)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 20)
+                            }
+
+                            divider
+
+                            // Print notification status
+                            Button {
+                                UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+                                    print("=== PENDING NOTIFICATIONS ===")
+                                    print("Count: \(requests.count)")
+                                    for r in requests {
+                                        print("ID: \(r.identifier)")
+                                        print("Trigger: \(String(describing: r.trigger))")
+                                    }
+                                    print("isActivated: \(NotificationService.isActivated)")
+                                    if let cached = NotificationPlanCache.shared.load() {
+                                        print("Cache referenceDate: \(cached.referenceDate)")
+                                        print("Cache today windows: \(cached.today.windows.count)")
+                                    } else {
+                                        print("Cache: nil")
+                                    }
+                                }
+                            } label: {
+                                Text("Print notification status")
+                                    .font(.unica(15))
+                                    .foregroundStyle(.purple)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 20)
+                            }
+
+                            divider
+
+                            // Bypass subscription
+                            Button {
+                                SubscriptionService.shared.bypassPaywall()
+                            } label: {
+                                Text("Bypass subscription")
+                                    .font(.unica(15))
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 20)
+                            }
+
+                            divider
+
+                            // Re-show onboarding
+                            Button {
+                                hasCompletedOnboarding = false
+                            } label: {
+                                Text("Re-show onboarding")
+                                    .font(.unica(15))
+                                    .foregroundStyle(.blue.opacity(0.7))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 20)
+                            }
+
+                            divider
+
+                            // Reset onboarding
+                            Button {
+                                ProfileService.shared.clear()
+                                SubscriptionService.shared.clearBypass()
+                                hasCompletedOnboarding = false
+                            } label: {
+                                Text("Reset onboarding")
+                                    .font(.unica(15))
+                                    .foregroundStyle(.red.opacity(0.7))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 20)
+                            }
+
+                            divider
+                        }
+                        #endif
                     }
                     .padding(.bottom, 48)
                 }
@@ -249,5 +372,12 @@ struct SettingsView: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 20)
         .contentShape(Rectangle())
+    }
+
+    // MARK: - Helpers
+
+    private func dayKey() -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
     }
 }

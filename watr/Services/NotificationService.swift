@@ -31,7 +31,7 @@ class NotificationService {
         set { UserDefaults.standard.set(newValue, forKey: activatedKey) }
     }
 
-    private let snoozeMinutes = 15
+    private let snoozeMinutes = 10
 
     func requestPermission() async -> Bool {
         let center = UNUserNotificationCenter.current()
@@ -158,7 +158,8 @@ class NotificationService {
                let cached = NotificationPlanCache.shared.load() {
                 let calendar = Calendar.current
                 let planDay = dayDate(from: dayKey, calendar: calendar) ?? cached.referenceDate
-                let plan = calendar.isDate(planDay, inSameDayAs: cached.referenceDate) ? cached.today : cached.tomorrow
+                let plan = calendar.isDate(planDay, inSameDayAs: cached.referenceDate)
+                    ? cached.today : cached.tomorrow
                 guard index < plan.windows.count else { return }
                 let window = plan.windows[index]
                 let fireDate = Date().addingTimeInterval(TimeInterval(snoozeMinutes * 60))
@@ -200,13 +201,13 @@ class NotificationService {
 
     func registerCategories() {
         let doneAction = UNNotificationAction(
-            identifier: "DONE",
+            identifier: Action.done,
             title: "Done",
             options: []
         )
         let snoozeAction = UNNotificationAction(
-            identifier: "SNOOZE",
-            title: "Remind Me Later",
+            identifier: Action.snooze,
+            title: "Remind me in \(snoozeMinutes) min",
             options: []
         )
         let category = UNNotificationCategory(
@@ -298,17 +299,16 @@ class NotificationService {
                     on: planDay,
                     calendar: calendar
                 ),
-                let windowEnd = ScheduleTime.resolvedTime(from: window.endTime, on: planDay, calendar: calendar)
+                let windowEnd = ScheduleTime.resolvedTime(
+                    from: window.endTime,
+                    on: planDay,
+                    calendar: calendar
+                )
             else { continue }
 
             if now >= windowEnd { continue }
 
-            let scheduleDate: Date
-            if fireDate > now {
-                scheduleDate = fireDate
-            } else {
-                scheduleDate = now.addingTimeInterval(5)
-            }
+            let scheduleDate = fireDate > now ? fireDate : now.addingTimeInterval(5)
 
             return ScheduledReminder(
                 window: window,
@@ -325,8 +325,8 @@ class NotificationService {
 
     private func enqueue(_ reminder: ScheduledReminder, calendar: Calendar) {
         let content = UNMutableNotificationContent()
-        content.title = notificationTitle(for: reminder.window)
-        content.body = notificationBody(for: reminder.window)
+        content.title = notificationTitle(for: reminder.window, on: reminder.planDay)
+        content.body = notificationBody(for: reminder.window, on: reminder.planDay)
         content.sound = .default
         content.categoryIdentifier = "HYDRATION_REMINDER"
         content.userInfo = [
@@ -352,24 +352,15 @@ class NotificationService {
             trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         }
 
-        let request = UNNotificationRequest(
-            identifier: identifier,
-            content: content,
-            trigger: trigger
-        )
-
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request) { error in
-            if let error {
-                print("Notification error: \(error)")
-            }
+            if let error { print("Notification error: \(error)") }
         }
     }
 
     private func clearDeliveredHydrationNotifications() {
         UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
-            let ids = notifications
-                .map(\.request.identifier)
-                .filter { $0.hasPrefix("watr-") }
+            let ids = notifications.map(\.request.identifier).filter { $0.hasPrefix("watr-") }
             guard !ids.isEmpty else { return }
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
         }
@@ -377,10 +368,10 @@ class NotificationService {
 
     private func dayIdentifier(for date: Date, calendar: Calendar) -> String {
         let components = calendar.dateComponents([.year, .month, .day], from: date)
-        let year = components.year ?? 0
-        let month = components.month ?? 0
-        let day = components.day ?? 0
-        return String(format: "%04d-%02d-%02d", year, month, day)
+        return String(format: "%04d-%02d-%02d",
+                      components.year ?? 0,
+                      components.month ?? 0,
+                      components.day ?? 0)
     }
 
     private func dayDate(from dayKey: String, calendar: Calendar) -> Date? {
@@ -393,34 +384,116 @@ class NotificationService {
         return calendar.date(from: components)
     }
 
-    private func notificationTitle(for window: HydrationWindow) -> String {
-        switch window.name {
-        case "Upon Waking":     return "wakey wakey"
-        case "After Breakfast": return "breakfast check"
-        case "With Lunch":      return "lunch szn = hydration szn"
-        case "Afternoon":       return "don't ghost your water bottle"
-        case "Late Afternoon":  return "almost there, keep it up"
-        case "Pre-Workout":     return "pre-workout hydration unlocked"
-        case "Post-Workout":    return "you sweated. now drink up"
-        case "With Dinner":     return "dinner time, water time"
-        case "Wind Down":       return "last call for hydration"
-        default:                return "yo, water break"
-        }
+    // MARK: - Notification copy
+
+    // Uses the day of year + window name to pick a variant that rotates daily
+    // but is consistent within a single day (same window always same message that day)
+    private func variantIndex(for window: HydrationWindow, on date: Date, count: Int) -> Int {
+        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: date) ?? 1
+        return (abs(window.name.hashValue) + dayOfYear) % count
     }
 
-    private func notificationBody(for window: HydrationWindow) -> String {
-        let oz = Int(window.minOz)
-        let phrases = [
-            "drink \(oz)oz rn no excuses",
-            "your body is literally asking for \(oz)oz",
-            "sip \(oz)oz and keep the streak alive",
-            "\(oz)oz standing between you and peak hydration",
-            "not drinking \(oz)oz is not the vibe",
-            "hydration check: \(oz)oz, go",
-            "\(oz)oz. tap done when you're good.",
+    private func notificationTitle(for window: HydrationWindow, on date: Date) -> String {
+        let minOz = Int(window.minOz)
+        let maxOz = Int(window.maxOz)
+        let variants = [
+            "\(minOz)-\(maxOz)oz of water",
+            "drink \(minOz)-\(maxOz)oz",
+            "\(minOz)-\(maxOz)oz rn",
+            "time for \(minOz)-\(maxOz)oz",
+            "\(minOz)-\(maxOz)oz. go.",
         ]
-        // Pick based on window name hash so it's consistent per window
-        let index = abs(window.name.hashValue) % phrases.count
-        return phrases[index]
+        return variants[variantIndex(for: window, on: date, count: variants.count)]
+    }
+
+    private func notificationBody(for window: HydrationWindow, on date: Date) -> String {
+        let variant: String
+        let variants: [String]
+
+        switch window.name {
+        case "Upon Waking":
+            variants = [
+                "bro stop doomscrolling for a sec",
+                "first L of the day if you skip this",
+                "staying hydrated = looking good today",
+                "your skin is begging for this rn",
+                "i dare you to start the day hydrated",
+            ]
+        case "After Breakfast":
+            variants = [
+                "momentum? what momentum? go drink water",
+                "don't be living life dehydrated",
+                "breakfast was cute, now hydrate",
+                "don't let breakfast be your only W",
+                "drink now or you'll regret it",
+            ]
+        case "With Lunch":
+            variants = [
+                "get hangry for some water",
+                "eating again and still no water? insane",
+                "get some water before its too late",
+                "you still have time for water",
+                "halfway thru the day, don't fold",
+            ]
+        case "Afternoon":
+            variants = [
+                "don't ghost your water bottle",
+                "slump is crazy…almost like you're dehydrated",
+                "water would fix this but you wouldn't get it",
+                "you good? go drink water rn",
+                "water. always water. everytime",
+            ]
+        case "Late Afternoon":
+            variants = [
+                "hot people drink water",
+                "ask your friend if they drink enough water",
+                "go water mog your entire bloodline",
+                "why would you stop now? lol",
+                "i heard your friend just had some water",
+            ]
+        case "Pre-Workout":
+            variants = [
+                "i really hope you drink water rn",
+                "let's not regret this later",
+                "dry workout should be a crime, hydrate pls",
+                "about to workout dry? main character of the hospital",
+                "don't start lacking now 😭",
+            ]
+        case "Post-Workout":
+            variants = [
+                "your water bottle better be ready",
+                "don't cancel post-workout glow due to dryness",
+                "you earned this drink of water",
+                "who doesn't drink water after a workout?",
+                "you'd look even better with some water",
+            ]
+        case "With Dinner":
+            variants = [
+                "mmmm, delicious water",
+                "you cooked today, now seal it",
+                "at least if it taste bad, you have water",
+                "don't be that person, drink some water",
+                "i'm almost done bothering you",
+            ]
+        case "Wind Down":
+            variants = [
+                "last call for water, anybody?",
+                "last chance before you wake up insufferable",
+                "drink water before doomscrolling tonight",
+                "don't go to bed crusty",
+                "you did great bro, one more sip",
+            ]
+        default:
+            variants = [
+                "yo, water break",
+                "drink water or else",
+                "pls just drink water",
+                "water time fr",
+                "don't forget to drink (water)",
+            ]
+        }
+
+        variant = variants[variantIndex(for: window, on: date, count: variants.count)]
+        return "\(variant) — hold to mark done"
     }
 }
